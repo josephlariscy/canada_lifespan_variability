@@ -1,24 +1,27 @@
 # I arrange the e-dagger and life expectancy values so that they match the
-# input files for the R programs that produce figures in Brown et al. (2023).
+# input files for the R programs that produce figures in Brown, Lariscy, and
+# Walker (2023).
 
-# Run program chmd_import.R before running this program.
+# Run programs 1-chmd_import.R and 2-chmd_us_states.R before running this 
+# program.
 
-#install.packages("ggplot2")
-#install.packages("scales")
-#install.packages("gridExtra")
-#install.packages("grid")
-#install.packages("dplyr")
-#install.packages("reshape2")
-#install.packages("extrafont")
-#install.packages("data.table")
-library(ggplot2)
-library(scales)
-library(gridExtra)
-library(grid)
-library(dplyr)
-library(reshape2)
-library(extrafont)
+install.packages("data.table")
+install.packages("dplyr")
+install.packages("extrafont")
+install.packages("ggplot2")
+install.packages("grid")
+install.packages("gridExtra")
+install.packages("reshape2")
+install.packages("scales")
 library(data.table)  # transpose() function
+library(dplyr)
+library(extrafont)
+library(grid)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+library(scales)
+
 
 # Figure 1: dx curves in 1950-1954 and 2015-2019 ----
 
@@ -147,7 +150,8 @@ legend("topright", legend = c("Both sexes combined", "Female", "Male"),
        lty = 1:3, cex)
 
 
-# Figure 3 - facet plot for each province/territory, both sexes ----
+
+# Facet plot for each province/territory, both sexes ----
 
   # These table requires three separate input data files:
     # 1. Canada overall: one column for year and one column for e-dagger
@@ -214,13 +218,13 @@ ggplot(NULL, aes(x = Year, y = edag)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.png", 
-       device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.pdf", 
-       device = cairo_pdf)
+#ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.png", 
+#       device = png)
+#ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.pdf", 
+#       device = cairo_pdf)
 
 
-# Without Northwest Territories and Yukon ----
+# Figure 3: Facet plot for the 10 provinces, without Northwest Territories and Yukon, both sexes ----
 
 df_fig3_provs_no_terrs <- df_fig3_provs[df_fig3_provs$prov != "Northwest Territories" & df_fig3_provs$prov != "Yukon", ]
 df_fig3_other_provs_no_terrs <- df_fig3_provs_no_terrs[,-1]  # remove prov variable
@@ -247,13 +251,13 @@ ggplot(NULL, aes(x = Year, y = edag)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_facet_no_territories.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet_no_territories.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_facet_no_territories.pdf", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet_no_territories.pdf", 
        device = cairo_pdf)
 
 
-# With ONLY Northwest Territories and Yukon ----
+# Figure 4: Facet plot for ONLY Northwest Territories and Yukon, both sexes ----
 
 df_fig3_terrs <- df_fig3_provs[df_fig3_provs$prov == "Northwest Territories" | df_fig3_provs$prov == "Yukon", ]
 
@@ -312,49 +316,49 @@ write.csv(table1_edagger0,
           "C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/table1_edagger0.csv")
 
 
-# Figure 4: Changes in life expectancy and e-dagger ----
+# Figure 5: Changes in life expectancy and e-dagger ----
 
   # Data prep: The input data file should have four variables: 
   # province, year, ex, and edagger
 
-df_fig4_alb <- b_alb[b_alb$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_bco <- b_bco[b_bco$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_man <- b_man[b_man$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_nbr <- b_nbr[b_nbr$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_nfl <- b_nfl[b_nfl$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_nsc <- b_nsc[b_nsc$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_nwt <- b_nwt[b_nwt$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_ont <- b_ont[b_ont$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_pei <- b_pei[b_pei$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_que <- b_que[b_que$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_sas <- b_sas[b_sas$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_yuk <- b_yuk[b_yuk$Age == 0, c("prov", "Year", "ex", "edag")]
-df_fig4_scatter <- rbind(df_fig4_alb, df_fig4_bco, df_fig4_man, df_fig4_nbr,
-                        df_fig4_nfl, df_fig4_nsc, df_fig4_nwt, df_fig4_ont,
-                        df_fig4_pei, df_fig4_que, df_fig4_sas, df_fig4_yuk)
+df_fig5_alb <- b_alb[b_alb$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_bco <- b_bco[b_bco$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_man <- b_man[b_man$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_nbr <- b_nbr[b_nbr$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_nfl <- b_nfl[b_nfl$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_nsc <- b_nsc[b_nsc$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_nwt <- b_nwt[b_nwt$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_ont <- b_ont[b_ont$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_pei <- b_pei[b_pei$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_que <- b_que[b_que$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_sas <- b_sas[b_sas$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_yuk <- b_yuk[b_yuk$Age == 0, c("prov", "Year", "ex", "edag")]
+df_fig5_scatter <- rbind(df_fig5_alb, df_fig5_bco, df_fig5_man, df_fig5_nbr,
+                         df_fig5_nfl, df_fig5_nsc, df_fig5_nwt, df_fig5_ont,
+                         df_fig5_pei, df_fig5_que, df_fig5_sas, df_fig5_yuk)
 
 # reshape data from long to wide
-df_fig4_scatter_wide <- reshape(data = df_fig4_scatter,
+df_fig5_scatter_wide <- reshape(data = df_fig5_scatter,
                                 idvar = "prov",
                                 v.names = c("ex", "edag"),
                                 timevar = "Year",
                                 direction = "wide")
 
-df_fig4_scatter_wide$ex.1950.1974 = df_fig4_scatter_wide$ex.1970 - df_fig4_scatter_wide$ex.1950
-df_fig4_scatter_wide$ex.1975.1999 = df_fig4_scatter_wide$ex.1995 - df_fig4_scatter_wide$ex.1975
-df_fig4_scatter_wide$ex.2000.2019 = df_fig4_scatter_wide$ex.2015 - df_fig4_scatter_wide$ex.2000
+df_fig5_scatter_wide$ex.1950.1974 = df_fig5_scatter_wide$ex.1970 - df_fig5_scatter_wide$ex.1950
+df_fig5_scatter_wide$ex.1975.1999 = df_fig5_scatter_wide$ex.1995 - df_fig5_scatter_wide$ex.1975
+df_fig5_scatter_wide$ex.2000.2019 = df_fig5_scatter_wide$ex.2015 - df_fig5_scatter_wide$ex.2000
 
-df_fig4_scatter_wide$ld.1950.1974 = df_fig4_scatter_wide$edag.1970 - df_fig4_scatter_wide$edag.1950
-df_fig4_scatter_wide$ld.1975.1999 = df_fig4_scatter_wide$edag.1995 - df_fig4_scatter_wide$edag.1975
-df_fig4_scatter_wide$ld.2000.2019 = df_fig4_scatter_wide$edag.2015 - df_fig4_scatter_wide$edag.2000
+df_fig5_scatter_wide$ld.1950.1974 = df_fig5_scatter_wide$edag.1970 - df_fig5_scatter_wide$edag.1950
+df_fig5_scatter_wide$ld.1975.1999 = df_fig5_scatter_wide$edag.1995 - df_fig5_scatter_wide$edag.1975
+df_fig5_scatter_wide$ld.2000.2019 = df_fig5_scatter_wide$edag.2015 - df_fig5_scatter_wide$edag.2000
 
 # Keep only the variables I need
-df_fig4_scatter_wide <- df_fig4_scatter_wide[c("prov",
+df_fig5_scatter_wide <- df_fig5_scatter_wide[c("prov",
                                                "ex.1950.1974", "ex.1975.1999",
                                                "ex.2000.2019", "ld.1950.1974",
                                                "ld.1975.1999", "ld.2000.2019")]
 
-df_fig4_scatter_long <- reshape(data = df_fig4_scatter_wide,
+df_fig5_scatter_long <- reshape(data = df_fig5_scatter_wide,
                                 direction = 'long', 
                                 varying = c('ex.1950.1974', 'ld.1950.1974',
                                             'ex.1975.1999', 'ld.1975.1999',
@@ -385,14 +389,14 @@ label_trueminus <- function(x){
 
 
 # Check range of ex.change and ld.change to see how to set axes
-range(df_fig4_scatter_long$ld.change)
-range(df_fig4_scatter_long$ex.change)
+range(df_fig5_scatter_long$ld.change)
+range(df_fig5_scatter_long$ex.change)
   # From 1950 to 1974, ex in Northwest Territories increased by 19.96 years
   # From 1950 to 1974, e-dagger in Northwest Territories decreased by -7.0 years
 
 
 windows(width = 12, height = 30)
-ggplot(data = df_fig4_scatter_long, aes(x = ld.change, y = ex.change)) +
+ggplot(data = df_fig5_scatter_long, aes(x = ld.change, y = ex.change)) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
   geom_point(shape = 21, size = 2, fill = "grey", col = "black") +
@@ -417,9 +421,9 @@ ggplot(data = df_fig4_scatter_long, aes(x = ld.change, y = ex.change)) +
   geom_text(data = ann_text, label = ann_text$label, family = "Times New Roman",
             size = 2.5, hjust = 0)
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_scatter.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure5_scatter.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_scatter.pdf", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure5_scatter.pdf", 
        device = cairo_pdf)
 
 # scales= "free" - adds y-axis to all three facets, not just the first one
@@ -429,7 +433,7 @@ ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/fig
 # Canada and US comparison in 2015-2019 ----
 
 # Prep data
-comp_can <- df_fig4_scatter[df_fig4_scatter$Year == 2015, ]
+comp_can <- df_fig5_scatter[df_fig5_scatter$Year == 2015, ]
 comp_can$PopName <- comp_can$prov
 comp_can$nation <- rep("CAN", times = 12)  
   # Add variable nation, give all rows a value of "can"
@@ -478,7 +482,7 @@ ggplot(data = comp_fig, aes(x = ex, y = edag)) +
   annotate("text", x = 81.5, y = 12, label = "Saskatchewan") +
   annotate("segment", x = 81, xend = 80.15, y = 11.9, yend = 11.57)
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure_comparison.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure6_comparison.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure_comparison.pdf", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure6_comparison.pdf", 
        device = cairo_pdf)

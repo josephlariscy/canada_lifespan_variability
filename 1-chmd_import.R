@@ -1,7 +1,7 @@
 # R script to import Canadian Human Mortality Database
 
-  # This project will calculate lifespan inequality for each Canadian province/.
-  # territory. I will replicate the article by Brown, Lariscy, and Walker (2023) 
+  # This project calculates lifespan inequality for each Canadian province/
+  # territory. I replicate the article by Brown, Lariscy, and Walker (2023) 
   # that calculated state-level trends in lifespan variability but with Canadian
   # provinces/territories.
 
@@ -11,12 +11,11 @@
   # https://www.demogr.mpg.de/papers/technicalreports/tr-2015-004.pdf
 
 install.packages("HMDHFDplus")
-install.packages("ggplot2")
-library(HMDHFDplus)
-library(ggplot2)
-
 install.packages("remotes")
-remotes::install_github("alysonvanraalte/LifeIneq")
+library(HMDHFDplus)
+library(remotes)
+
+install_github("alysonvanraalte/LifeIneq")
 library(LifeIneq)
 
 
@@ -36,8 +35,8 @@ getCHMDprovinces()
   # sas: Saskatchewan
   # yuk: Yukon
 
-    # Nunavut is not separated. It was part of the Northwest Territory until
-    # 1999.
+    # Nunavut is not separately specified. It was part of Northwest Territory
+    # until 1999.
 
 # Read in life table data for Canada overall and the provinces/territories
   # 1x5 = one-year age interval × five-year year interval
@@ -58,6 +57,8 @@ b_yuk <- readCHMDweb("yuk", "bltper_1x5")  # both, Yukon
 b_can <- readCHMDweb("can", "bltper_1x5")  # both, Canada
 
 # Read-in sex-specific and province-specific life tables
+
+# Females
 f_alb <- readCHMDweb("alb", "fltper_1x5")  # female, Alberta  
 f_bco <- readCHMDweb("bco", "fltper_1x5")  # female, British Columbia
 f_man <- readCHMDweb("man", "fltper_1x5")  # female, Manitoba
@@ -72,6 +73,7 @@ f_sas <- readCHMDweb("sas", "fltper_1x5")  # female, Saskatchewan
 f_yuk <- readCHMDweb("yuk", "fltper_1x5")  # female, Yukon
 f_can <- readCHMDweb("can", "fltper_1x5")  # female, Canada
 
+# Males
 m_alb <- readCHMDweb("alb", "mltper_1x5")  # male, Alberta  
 m_bco <- readCHMDweb("bco", "mltper_1x5")  # male, British Columbia
 m_man <- readCHMDweb("man", "mltper_1x5")  # male, Manitoba
@@ -89,7 +91,7 @@ m_can <- readCHMDweb("can", "mltper_1x5")  # male, Canada
 # The earliest year for most life tables is 1921.
 # The earliest year for Newfoundland, Northwest Territories, and Yukon is 1950.
 # The last interval for most provinces starts at 2020. The exception is Yukon;
-#   its last interval is 2015-2016.
+# its last interval is 2015-2016.
 
 # Limit to five-year intervals 1950-1954 to 2015-2019
 b_alb <- b_alb[b_alb$Year >= 1950 & b_alb$Year <= 2015, ]

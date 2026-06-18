@@ -8,10 +8,6 @@
 # USStateLifetables2022.zip [fileName]
 
 
-install.packages("remotes")
-remotes::install_github("alysonvanraalte/LifeIneq")
-library(LifeIneq)
-
 setwd("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/USStateLifetables2022/States")
 
 # A for loop could replace lines 19-375.
