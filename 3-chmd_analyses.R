@@ -53,7 +53,7 @@ ggplot(data = can1950_2015,
   xlab(expression(bold("Age"))) +
   coord_cartesian(ylim = c(0, 4500)) +
   theme_bw() +
-  theme(text = element_text(family = "Times New Roman"),
+  theme(text = element_text(family = "serif"),
         axis.text.x = element_text(color = "black", size = 12),
         axis.text.y = element_text(color = "black", size = 12),
         axis.title = element_text(size = 13),
@@ -64,12 +64,11 @@ ggplot(data = can1950_2015,
         legend.text = element_text(size = 12),
         legend.key.width = unit(4, "line")) 
 
-loadfonts(device = "postscript")
+#loadfonts(device = "postscript")
+
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure1_dx.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure1_dx.pdf", 
-       device = cairo_pdf)
-  
+
 
 # Figure 2 - plot of e-dagger 0 over time for Canada overall ----
 
@@ -113,7 +112,7 @@ ggplot(data = df_fig1,
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
   theme_bw() +
-  theme(text = element_text(family = "Times New Roman"),
+  theme(text = element_text(family = "serif"),
         axis.text.x = element_text(color = "black", size = 12, angle = 45,
                                    vjust = 1, hjust = 1),
         axis.text.y = element_text(color = "black", size = 12),
@@ -127,8 +126,6 @@ ggplot(data = df_fig1,
 
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure2_e-dagger.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure2_e-dagger.pdf", 
-       device = cairo_pdf)
 
 
 # Supplemental analysis with e-dagger-10
@@ -213,15 +210,13 @@ ggplot(NULL, aes(x = Year, y = edag)) +
   theme_bw() +
   theme(axis.text.x = element_text(color = "black", angle = 90, vjust = 0.5),
         axis.text.y = element_text(color = "black"),
-        text = element_text(family = "Times New Roman"),
+        text = element_text(family = "serif"),
         strip.text = element_text(face = "bold"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
 #ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.png", 
 #       device = png)
-#ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.pdf", 
-#       device = cairo_pdf)
 
 
 # Figure 3: Facet plot for the 10 provinces, without Northwest Territories and Yukon, both sexes ----
@@ -246,15 +241,13 @@ ggplot(NULL, aes(x = Year, y = edag)) +
   theme_bw() +
   theme(axis.text.x = element_text(color = "black", angle = 90, vjust = 0.5),
         axis.text.y = element_text(color = "black"),
-        text = element_text(family = "Times New Roman"),
+        text = element_text(family = "serif"),
         strip.text = element_text(face = "bold"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet_no_territories.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet_no_territories.pdf", 
-       device = cairo_pdf)
 
 
 # Figure 4: Facet plot for ONLY Northwest Territories and Yukon, both sexes ----
@@ -278,15 +271,13 @@ ggplot(NULL, aes(x = Year, y = edag)) +
   theme_bw() +
   theme(axis.text.x = element_text(color = "black", angle = 90, vjust = 0.5),
         axis.text.y = element_text(color = "black"),
-        text = element_text(family = "Times New Roman"),
+        text = element_text(family = "serif"),
         strip.text = element_text(face = "bold"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_facet_only_territories.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_facet_only_territories.pdf", 
-       device = cairo_pdf)
 
 
 # Table 1 ----
@@ -387,13 +378,11 @@ label_trueminus <- function(x){
   ifelse(sign(x) == -1, paste0("\u2212", abs(x)), x)
 }
 
-
 # Check range of ex.change and ld.change to see how to set axes
 range(df_fig5_scatter_long$ld.change)
 range(df_fig5_scatter_long$ex.change)
   # From 1950 to 1974, ex in Northwest Territories increased by 19.96 years
   # From 1950 to 1974, e-dagger in Northwest Territories decreased by -7.0 years
-
 
 windows(width = 12, height = 30)
 ggplot(data = df_fig5_scatter_long, aes(x = ld.change, y = ex.change)) +
@@ -412,7 +401,7 @@ ggplot(data = df_fig5_scatter_long, aes(x = ld.change, y = ex.change)) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 11, color = "black"),
         axis.text.y = element_text(size = 11, color = "black"),
-        text = element_text(size = 12, family = "Times New Roman"),
+        text = element_text(size = 12, family = "serif"),
         panel.spacing = unit(1, "lines"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -421,13 +410,11 @@ ggplot(data = df_fig5_scatter_long, aes(x = ld.change, y = ex.change)) +
   geom_text(data = ann_text, label = ann_text$label, family = "Times New Roman",
             size = 2.5, hjust = 0)
 
+# scales = "free" - adds y-axis to all three facets, not just the first one
+# panel.spacing = unit(2, "lines") - adds space between facets
+
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure5_scatter.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure5_scatter.pdf", 
-       device = cairo_pdf)
-
-# scales= "free" - adds y-axis to all three facets, not just the first one
-# panel.spacing = unit(2, "lines") - adds space between facets
 
 
 # Canada and US comparison in 2015-2019 ----
@@ -454,35 +441,33 @@ windows(width = 6, height = 6)
 ggplot(data = comp_fig, aes(x = ex, y = edag)) +
   geom_point(aes(fill = factor(nation)), color = "black", size = 4, shape = 21) +
   scale_fill_manual(values = c("black", "grey"), 
-                     labels = c("Canadian provinces", "U.S. states")) +
+                     labels = c("Canadian provinces and territories", "U.S. states")) +
   ggtitle(expression(bold("Figure 6:\n")~"Lifespan variability and life expectancy in Canadian \nprovinces/territories and U.S. states, 2015\u20132019")) +
   xlab(expression(bold('Life expectancy')~bolditalic('e')~bold(""["0"]))) +     
   ylab(expression(bold('Lifespan disparity ')~bolditalic('e')~bold(""["0"]^"\u2020"))) +
   scale_x_continuous(limits = c(74, 84), breaks = seq(74, 84, 2)) +
   scale_y_continuous(limits = c(9, 14)) +
   theme_bw() + 
-  theme(text = element_text(family = "Times New Roman"),
+  theme(text = element_text(family = "serif"),
         axis.text.x = element_text(color = "black", size = 12),
         axis.text.y = element_text(color = "black", size = 12),
         axis.title = element_text(size = 13),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        legend.position = c(0.2, 0.1),
+        legend.position = c(0.3, 0.1),
         legend.title = element_blank(),
         legend.background = element_blank(),
         legend.box.background = element_rect(color = "black"),
         legend.text = element_text(size = 12),
         plot.margin = margin(t = 30, r = 10, b = 10, l = 10)) +
-  annotate("text", x = 74.9, y = 12, label = "Northwest\nTerritories") +
+  annotate("text", x = 74.9, y = 12,   family = "serif", label = "Northwest\nTerritories") +
+  annotate("text", x = 78.2, y = 11,   family = "serif", label = "Yukon") +
+  annotate("text", x = 79.9, y = 12.4, family = "serif", label = "Manitoba") +
+  annotate("text", x = 81.5, y = 12,   family = "serif", label = "Saskatchewan") +
   annotate("segment", x = 74.9, xend = 74.43, y = 12.3, yend = 12.8) +
-  annotate("text", x = 78.2, y = 11, label = "Yukon") +
-  annotate("segment", x = 78.2, xend = 78.9, y = 11.1, yend = 11.7) +
-  annotate("text", x = 79.9, y = 12.4, label = "Manitoba") +
-  annotate("segment", x = 79.8, xend = 80, y = 12.3, yend = 11.5) +
-  annotate("text", x = 81.5, y = 12, label = "Saskatchewan") +
-  annotate("segment", x = 81, xend = 80.15, y = 11.9, yend = 11.57)
+  annotate("segment", x = 78.2, xend = 78.9,  y = 11.1, yend = 11.7) +
+  annotate("segment", x = 79.8, xend = 80,    y = 12.3, yend = 11.5) +
+  annotate("segment", x = 81,   xend = 80.15, y = 11.9, yend = 11.57)
 
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure6_comparison.png", 
        device = png)
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure6_comparison.pdf", 
-       device = cairo_pdf)
