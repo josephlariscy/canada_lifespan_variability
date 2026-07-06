@@ -500,7 +500,7 @@ b_bco_2005$edag <- ineq(age = b_bco_2005$Age,
                         method = 'edag')
 
 # There's an issue with dx for British Columbia in 2010. The sum of the dx
-# column does not equal 100,000; it equals, 99,989. I believe this is due to 
+# column does not equal 100,000; it equals 99,989. I believe this is due to 
 # rounding. The ineq() command does not work if the sum of dx is not 100,000.
 # I create a new dx function.
 
