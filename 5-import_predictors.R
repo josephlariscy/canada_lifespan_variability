@@ -360,16 +360,66 @@ predictors <- df_list |>
   reduce(full_join, by = c("province", "year"))
 
 
-# Replace Table 1. Descriptive Statistics by Wijesinghe et al.
+# Replicate Table 1. Descriptive Statistics by Wijesinghe et al.
+install.packages("gt")
 install.packages("gtsummary")
+library(gt)
 library(gtsummary)
 
-tbl_summary(predictors, include = -c(province, year),
-            statistic = list(all_continuous() ~ "{N_obs} {mean} {sd} {median} {min} {max}"))
+install.packages("flextable")
+library(flextable)
+
+
 
 predictors |>
-  tbl_summary(include = -c(province, year),
-  statistic = list(all_continuous() ~ "{mean} {sd} {median} {min} {max}"),
-  digits = all_continuous() ~ 2) |>
-  add_n() |>
-  modify_header(label = "Variable", "N", "Mean", "SD", "Median", "Min.", "Max.")
+  tbl_wide_summary(include = -c(province, year),
+              statistic = c("{N_obs}", "{mean}", "{sd}", "{median}", "{min}", "{max}"),
+              digits = all_continuous() ~ c(0, 2, 2, 2, 2, 2),
+  label = list(edag = "life disparity (*e*<sup>\u2020</sup>)",
+              ed_med = "% postsecondary education",
+              ed_high = "% college graduate",
+              gini = "Gini index",
+              density = "Population density",
+              crime = "Violent crime rate (per 10,000)",
+              co2_per_cap = "CO<sub>2</sub> per capita",
+              phys_per_cap = "Physicians (per 10,000)",
+              unemp = "Unemployment rate (%)"))|>
+  modify_header(label = "Variables",
+                stat_1 = "N",
+                stat_2 = "Mean",
+                stat_3 = "Std. Dev.",
+                stat_4 = "Median",
+                stat_5 = "Min.",
+                stat_6 = "Max.") |>
+  as_gt() |>
+    tab_header(title = md("**Table 1.** Descriptive statistics for regression variables")) |>  
+    opt_align_table_header(align = "left") |>
+    tab_options(heading.title.font.size = px(16),
+                table_body.hlines.style = "none",
+                table.font.names = "serif",
+                table.border.top.color = "white",
+                heading.border.bottom.color = "black",
+                column_labels.border.bottom.color = "black",
+                table_body.border.bottom.color = "black",
+                table.font.color = "black") |>
+  opt_vertical_padding(scale = 0.2) |>
+  gt::fmt_markdown(columns = c(label))  # This allows sup
+  
+  # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 
+  #   subscript in row labels.
+
+# If only using subscript or superscript, this option works after as_gt()
+#  text_transform(
+#    locations = cells_body(),
+#    fn = function(x) {
+#      str_replace_all(x,
+#                      pattern = "@",
+#                      replacement = "<sub>") %>% 
+#        str_replace_all("~",
+#                        "</sub>") }
+#  ) 
+
+# source for subscript: https://stackoverflow.com/questions/60534214/how-do-i-add-subscripts-to-labels-in-tables-using-the-gtsummary-package-in-r
+
+show_header_names(table1)
+
