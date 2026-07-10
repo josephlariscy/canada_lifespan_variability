@@ -13,7 +13,7 @@ library(reshape2)
 library(tidyverse)
 
 
-# Mid-year population
+# Mid-year population ##########################################################
   # Data from 1971 to 2025
 pop <- get_cansim("17-10-0005-01") |>
                   mutate(GeoUID = as.numeric(GeoUID)) |>
@@ -50,7 +50,37 @@ pop$province <- as.character(pop$province)
 pop <- pop[order(pop$province), ]
 
 
-# Gini coefficient
+# Population growth ###########################################################
+
+# Other option
+install.packages("curl")
+install.packages("readxl")
+library(curl)
+library(readxl)
+
+url <- "https://www.cihi.ca/sites/default/files/document/nhex-appendices-a-d-2025-en.xlsx"
+destfile <- "nhex-appendices-a-d-2025-en.xlsx"
+curl_download(url, destfile)
+growth <- read_excel(destfile, sheet = "D — Pop", range = "A56:O107")
+
+
+growth <- growth |>
+  filter(Year >= 2000 & Year <= 2019) |>
+  select(-c("Y.T.", "N.W.T.", "Nun.", "Canada")) |>
+  rename("year" = "Year", "nfl" = "N.L.", "pei" = "P.E.I.", "nsc" = "N.S.",
+         "nbr" = "N.B.", "que" = "Que.", "ont" = "Ont.", "man" = "Man.",
+         "sas" = "Sask.", "alb" = "Alta.", "bco" = "B.C.")
+
+# Change from wide to long
+growth_long <- growth |>
+  pivot_longer(cols = c("nfl", "pei", "nsc", "nbr", "que",
+                        "ont", "man", "sas", "alb", "bco"),
+               names_to = "province",
+               values_to = "pop_growth")
+growth_long$pop_growth <- as.numeric((growth_long$pop_growth))
+summary(growth_long$pop_growth)
+
+# Gini coefficient ############################################################
   # Three different measures: adjusted market income, adjusted total income, and
   # adjusted after-tax income. I picked "Adjusted total income."
 gini <- get_cansim("11-10-0134-01") |>
@@ -81,7 +111,7 @@ gini <- gini[order(gini$province), ]
 summary(gini$gini)
 
 
-# Educational attainment
+# Educational attainment #######################################################
 educ <- get_cansim("37-10-0130-01") |>
         mutate(GeoUID = as.numeric(GeoUID)) |>
                filter(REF_DATE >= 2000 & REF_DATE <= 2019,
@@ -156,7 +186,42 @@ ed_high <- ed_high[order(ed_high$province), ]
 summary(ed_high$ed_high)
 
 
-# Violent crime rate
+# Log real per capita income #################################################
+  # In 2024 constant dollars
+
+income <- get_cansim("11-10-0239-01") |>
+  mutate(GeoUID = as.numeric(GeoUID),
+         log_income = log10(VALUE)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         `Age group` == "15 years and over",
+         Gender == "Total - Gender",
+         Statistics == "Average income (excluding zeros)",
+         `Income source` == "Total income",
+         GeoUID >= 10 & GeoUID <= 59)
+
+# Clean
+income <- income |>
+  rename(year = REF_DATE,
+         province = GEO) |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia")) |>
+  select(year, province, log_income)
+
+income$province <- as.character(income$province)
+income <- income[order(income$province), ]
+summary(income$log_income)
+
+
+# Violent crime rate ##########################################################
 
 crime <- get_cansim("35-10-0177-01")|>
   mutate(GeoUID = as.numeric(GeoUID),
@@ -192,15 +257,15 @@ crime <- crime[order(crime$province), ]
 summary(crime$crime)
 
 
-# Percentage foreign-born
+# Percentage foreign-born ######################################################
 # From Census years 2001, 2006, 2011, 2016, and 2021
 
 
-# Percentage indigenous
+# Percentage indigenous ########################################################
   # From Census years 2001, 2006, 2011, 2016, and 2021
 
 
-# Number of physicians
+# Number of physicians #########################################################
   # Source: Canadian Medical Association Masterfile
   # Canadian Physician Demographics and Supply Archive, Number of physicians by 
   # province/territory and specialty
@@ -240,7 +305,82 @@ phys_per_cap$year <- as.character(phys_per_cap$year)
 rm(physicians, physicians_long)
 
 
-# co2 emissions
+# Cigarette sales ##########################################################
+  # Visit https://health-infobase.canada.ca/substance-use/tobacco/sales/
+  # Download "Data - Tobacco sales.csv"
+  # This source combines tobacco sales for PEI with Yukon, Northwest Territories, and Nunavut
+#cigs <- read_csv("https://health-infobase.canada.ca/src/data/tobacco-sales/reformatted_data_2024.csv")
+
+
+# Smoking prevalence
+  # Wijesinghe et al. used cigarette sales (packs per capita)
+
+smoke <- read_csv("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/table_2_1_smoking_prevalence_by_province_99-20.csv")
+names(smoke)[1] <- "province"
+smoke <- smoke[-1, ]  # remove Canada
+
+# Vector names are numbers. I add a character to beginning.
+colnames(smoke) <- paste0("yr", colnames(smoke))
+colnames(smoke)[1] <- "province"
+smoke <- subset(smoke, select = -c(yr1999, yr2020))
+
+# Change from wide to long
+smoke_long <- smoke |>
+  pivot_longer(cols = starts_with("yr"),
+               names_to = "year",
+               values_to = "smoke")
+
+smoke_long$year <- substring(smoke_long$year, 3)  # remove yr from beginning of years
+smoke_long$year <- as.numeric(smoke_long$year)
+
+smoke_long <- smoke_long |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+# Add rows for years with missing smoking prevalence values
+new_rows <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
+                                        "ont", "man", "sas", "alb", "bco"), each = 3),
+                       year = rep(c(2014, 2016, 2018), times = 10),
+                       smoke = rep(NA, times = 30))
+
+smoke_long <- rbind(smoke_long, new_rows)
+
+smoke_long <- smoke_long[order(smoke_long$province, smoke_long$year), ]
+
+
+ggplot(smoke_long, aes(x = year, y = smoke, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_vline(xintercept = c(2014, 2016, 2018), linetype = "dashed")
+
+# Impute missing smoke values in 2014, 2016, and 2018 by province
+install.packages("simputation")
+library(simputation)
+
+smoke_long$yr0 <- smoke_long$year - 2000
+
+smoke_long_imp <- smoke_long |>
+  group_by(province) |>
+  impute_lm(smoke ~ yr0)
+
+smoke_long_imp$year <- as.character(smoke_long_imp$year)
+
+smoke_long_imp <- smoke_long_imp |>
+  select(year, province, smoke)
+
+summary(smoke_long_imp$smoke)
+
+
+# CO2 emissions ################################################################
   # Visit https://data-donnees.az.ec.gc.ca/data/substances/monitor/canada-s-official-greenhouse-gas-inventory/B-Economic-Sector?lang=en/
   # Download GHG_Econ_Can_Prov_Terr.csv
 
@@ -283,7 +423,8 @@ co2_per_cap <- co2_per_cap[c("year", "province", "co2_per_cap")]
 
 co2_per_cap <- as.tibble(co2_per_cap)
 
-# Population density
+
+# Population density ###########################################################
   # land mass in km^2
   # Source: https://www150.statcan.gc.ca/n1/pub/11-402-x/2010000/chap/geo/tbl/tbl07-eng.htm
 
@@ -309,7 +450,82 @@ density <- density |>
 summary(density$density)
 
 
-# Unemployment rate
+
+# Total personal health care (% GDP) #########################################
+options(scipen = 999)
+
+# GDP data
+  # in 2017 or 2012 dollars
+gdp <- get_cansim("36-10-0222-01") |>
+  mutate(GeoUID = as.numeric(GeoUID)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         GeoUID >= 10 & GeoUID <= 59,
+         Estimates == "Final consumption expenditure",
+         Prices == "2017 constant prices") |>
+  rename(year = REF_DATE,
+         province = GEO,
+         gdp = val_norm) |>
+  select(year, province, gdp)
+
+gdp <- gdp |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+
+# Health expenditure data
+url2 <- "https://www.cihi.ca/sites/default/files/document/nhex-open-data-2025-en.xlsx"
+destfile2 <- "nhex-open-data-2025-en.xlsx"
+curl_download(url2, destfile2)
+hlth_spend <- read_excel(destfile2, sheet = "Table O.1", range = "A3:I27849")
+
+hlth_spend <- hlth_spend |>
+  filter(`Use of Funds` == "Total",
+         Year >= 2000 & Year <= 2019,
+         Sector == "Provincial Government",
+         Province != "Canada") |>
+  rename(year = Year,
+         province = Province,
+         hlth_spend = `Constant 2010 dollars`) |>
+  mutate(hlth_spend = as.numeric(hlth_spend),
+         hlth_spend = 1.07 * hlth_spend) |>
+  select(year, province, hlth_spend)
+  # Multiply hlth_spend by 1.07 to convert 2010 constant dollars to 2017 
+  # constant dollars to match gdp
+
+hlth_spend <- hlth_spend |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+# Merge
+hlth_spend_pct <- merge(gdp, hlth_spend, by = c("province", "year"))
+
+hlth_spend_pct$hlth_spend_pct <- 100 * hlth_spend_pct$hlth_spend / hlth_spend_pct$gdp
+summary(hlth_spend_pct$hlth_spend_pct)
+
+hlth_spend_pct <- hlth_spend_pct |>
+  mutate(province = as.character(province)) |>
+  select(year, province, hlth_spend_pct)
+
+
+# Unemployment rate ############################################################
   # Data from 1976-2025
 
 unemp <- get_cansim("14-10-0327-02") |>
@@ -344,16 +560,30 @@ unemp <- unemp[order(unemp$province), ]
 summary(unemp$unemp)
 
 
+# Percentage employed in manufacturing #####################################
+  # Table begins with over a million observations
 
-# Merge data sets by year and province
+manufacture <- get_cansim("14-10-0023-01") |>
+  mutate(GeoUID = as.numeric(GeoUID)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         GeoUID >= 10 & GeoUID <= 59,
+         Gender == "Total - Gender",
+         `Age group` == "15 years and over",
+         `North American Industry Classification System (NAICS)` == "Total, all industries" |
+         `North American Industry Classification System (NAICS)` == "Manufacturing",
+         `Labour force characteristics` == "Employment")
+
+
+
+# Merge data sets by year and province ######################################
   # Each data frame is a tibble with 200 rows and 3 columns. year is character, 
   # province is character, and the unique variable is double.
 
 
-
 # Place all your data frames into a single list
-df_list <- list(e_dagger, ed_med, ed_high, gini, density, crime, co2_per_cap, 
-                phys_per_cap, unemp)
+df_list <- list(e_dagger, ed_med, ed_high, gini, density, growth_long, crime, 
+                smoke_long_imp, hlth_spend_pct, co2_per_cap, phys_per_cap, 
+                unemp, income)
 
 # Iteratively apply a full join across the entire list by grouping columns
 predictors <- df_list |> 
@@ -375,15 +605,19 @@ predictors |>
   tbl_wide_summary(include = -c(province, year),
               statistic = c("{N_obs}", "{mean}", "{sd}", "{median}", "{min}", "{max}"),
               digits = all_continuous() ~ c(0, 2, 2, 2, 2, 2),
-  label = list(edag = "life disparity (*e*<sup>\u2020</sup>)",
+  label = list(edag = "Life disparity at birth (*e*<sup>\u2020</sup>)",
               ed_med = "% postsecondary education",
               ed_high = "% college graduate",
-              gini = "Gini index",
+              gini = "Gini coefficient",
               density = "Population density",
+              pop_growth = "Population growth (%)",
               crime = "Violent crime rate (per 10,000)",
+              smoke = "Smoking prevalence",
+              hlth_spend_pct = "Healthcare as % of GDP",
               co2_per_cap = "CO<sub>2</sub> per capita",
               phys_per_cap = "Physicians (per 10,000)",
-              unemp = "Unemployment rate (%)"))|>
+              unemp = "Unemployment rate (%)",
+              log_income = "Log real income per capita"))|>
   modify_header(label = "Variables",
                 stat_1 = "N",
                 stat_2 = "Mean",
@@ -421,5 +655,5 @@ predictors |>
 
 # source for subscript: https://stackoverflow.com/questions/60534214/how-do-i-add-subscripts-to-labels-in-tables-using-the-gtsummary-package-in-r
 
-show_header_names(table1)
+#show_header_names(table1)
 
