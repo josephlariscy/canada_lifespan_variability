@@ -260,9 +260,119 @@ summary(crime$crime)
 # Percentage foreign-born ######################################################
 # From Census years 2001, 2006, 2011, 2016, and 2021
 
+immigrant <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/immigrant percentage.xlsx", sheet = "immigrants")
+
+immigrant_long <- immigrant |>
+  pivot_longer(cols = starts_with("20"),
+               names_to = "year",
+               values_to = "immigrant")
+
+immigrant_long$year <- as.numeric(immigrant_long$year)
+# convert year from character to numeric for lm lines in geom_smooth()
+
+ggplot(immigrant_long, aes(x = year, y = immigrant, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+immigrant_long <- immigrant_long |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+
+# Add rows with missing values for immigrant % for intercensal years
+new_rows_imm <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
+                                        "ont", "man", "sas", "alb", "bco"), each = 17),
+                       year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
+                       immigrant = rep(NA, times = 170))
+
+immigrant_long <- rbind(immigrant_long, new_rows_imm)
+immigrant_long <- immigrant_long[order(immigrant_long$province, immigrant_long$year), ]
+
+
+# Impute missing smoke values in 2014, 2016, and 2018 by province
+install.packages("simputation")
+library(simputation)
+
+immigrant_long$yr0 <- immigrant_long$year - 2000
+
+immigrant_long_imp <- immigrant_long |>
+  group_by(province) |>
+  impute_lm(immigrant ~ yr0)
+
+# Convert year from numeric to character
+immigrant_long_imp$year <- as.character(immigrant_long_imp$year)
+
+immigrant_long_imp <- immigrant_long_imp |>
+  filter(year >= 2000 & year <= 2019) |>
+  select(year, province, immigrant)
+
+summary(immigrant_long_imp$immigrant)
+
 
 # Percentage indigenous ########################################################
   # From Census years 2001, 2006, 2011, 2016, and 2021
+
+indig <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/aboriginal percentage.xlsx", sheet = "indigenous")
+
+indig_long <- indig |>
+  pivot_longer(cols = starts_with("20"),
+               names_to = "year",
+               values_to = "indigenous")
+
+indig_long$year <- as.numeric(indig_long$year)
+# convert year from character to numeric for lm lines in geom_smooth()
+
+ggplot(indig_long, aes(x = year, y = indigenous, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+indig_long <- indig_long |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+# Add rows with missing values for indigenous % for intercensal years
+new_rows_ind <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
+                                            "ont", "man", "sas", "alb", "bco"), each = 17),
+                           year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
+                           indigenous = rep(NA, times = 170))
+
+indig_long <- rbind(indig_long, new_rows_ind)
+indig_long <- indig_long[order(indig_long$province, indig_long$year), ]
+
+# Impute missing smoke values in 2014, 2016, and 2018 by province
+
+indig_long$yr0 <- indig_long$year - 2000
+
+indig_long_imp <- indig_long |>
+  group_by(province) |>
+  impute_lm(indigenous ~ yr0)
+
+# Convert year from numeric to character
+indig_long_imp$year <- as.character(indig_long_imp$year)
+
+indig_long_imp <- indig_long_imp |>
+  filter(year >= 2000 & year <= 2019) |>
+  select(year, province, indigenous)
+
+summary(indig_long_imp$indigenous)
 
 
 # Number of physicians #########################################################
@@ -333,6 +443,11 @@ smoke_long <- smoke |>
 smoke_long$year <- substring(smoke_long$year, 3)  # remove yr from beginning of years
 smoke_long$year <- as.numeric(smoke_long$year)
 
+ggplot(smoke_long, aes(x = year, y = smoke, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_vline(xintercept = c(2014, 2016, 2018), linetype = "dashed")
+
 smoke_long <- smoke_long |>
   mutate(province = recode(province, 
                            "Newfoundland and Labrador" = "nfl",
@@ -356,11 +471,6 @@ smoke_long <- rbind(smoke_long, new_rows)
 
 smoke_long <- smoke_long[order(smoke_long$province, smoke_long$year), ]
 
-
-ggplot(smoke_long, aes(x = year, y = smoke, color = province)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_vline(xintercept = c(2014, 2016, 2018), linetype = "dashed")
 
 # Impute missing smoke values in 2014, 2016, and 2018 by province
 install.packages("simputation")
@@ -564,15 +674,49 @@ summary(unemp$unemp)
   # Table begins with over a million observations
 
 manufacture <- get_cansim("14-10-0023-01") |>
+  rename(NAICS = `North American Industry Classification System (NAICS)`) |>
   mutate(GeoUID = as.numeric(GeoUID)) |>
   filter(REF_DATE >= 2000 & REF_DATE <= 2019,
          GeoUID >= 10 & GeoUID <= 59,
          Gender == "Total - Gender",
          `Age group` == "15 years and over",
-         `North American Industry Classification System (NAICS)` == "Total, all industries" |
-         `North American Industry Classification System (NAICS)` == "Manufacturing",
-         `Labour force characteristics` == "Employment")
+         NAICS == "Total, all industries" |
+         NAICS == "Manufacturing",
+         `Labour force characteristics` == "Employment") |>
+  select(REF_DATE, GEO, NAICS, val_norm)
 
+# Make data wide so there's a column for manufacturing employees and a column
+# for total employees
+manu_pct <- manufacture |>
+  pivot_wider(names_from = NAICS,
+              values_from = val_norm)
+
+manu_pct$manu_pct = 100 * manu_pct$Manufacturing / manu_pct$`Total, all industries`
+
+manu_pct <- manu_pct |>
+rename(year = REF_DATE,
+       province = GEO) |>
+  select(year, province, manu_pct)
+
+manu_pct <- manu_pct |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia"))
+
+# Change province from factor to character so it can be sorted into 
+# alphabetical order
+manu_pct$province <- as.character(manu_pct$province)
+manu_pct <- manu_pct[order(manu_pct$province), ]
+
+summary(manu_pct$manu_pct)
 
 
 # Merge data sets by year and province ######################################
@@ -581,9 +725,10 @@ manufacture <- get_cansim("14-10-0023-01") |>
 
 
 # Place all your data frames into a single list
-df_list <- list(e_dagger, ed_med, ed_high, gini, density, growth_long, crime, 
-                smoke_long_imp, hlth_spend_pct, co2_per_cap, phys_per_cap, 
-                unemp, income)
+df_list <- list(e_dagger, 
+                indig_long_imp, immigrant_long_imp, growth_long, density,
+                ed_med, ed_high, income, gini, unemp, manu_pct, 
+                smoke_long_imp, phys_per_cap, hlth_spend_pct, co2_per_cap, crime)
 
 # Iteratively apply a full join across the entire list by grouping columns
 predictors <- df_list |> 
@@ -600,38 +745,52 @@ install.packages("flextable")
 library(flextable)
 
 
-
+# Create table of descriptive statistics
 predictors |>
   tbl_wide_summary(include = -c(province, year),
-              statistic = c("{N_obs}", "{mean}", "{sd}", "{median}", "{min}", "{max}"),
-              digits = all_continuous() ~ c(0, 2, 2, 2, 2, 2),
+              statistic = c("{mean}", "{sd}", "{median}", "{min}", "{max}"),
+              digits = all_continuous() ~ c(2, 2, 2, 2, 2),
   label = list(edag = "Life disparity at birth (*e*<sup>\u2020</sup>)",
-              ed_med = "% postsecondary education",
-              ed_high = "% college graduate",
-              gini = "Gini coefficient",
-              density = "Population density",
-              pop_growth = "Population growth (%)",
-              crime = "Violent crime rate (per 10,000)",
-              smoke = "Smoking prevalence",
-              hlth_spend_pct = "Healthcare as % of GDP",
-              co2_per_cap = "CO<sub>2</sub> per capita",
-              phys_per_cap = "Physicians (per 10,000)",
-              unemp = "Unemployment rate (%)",
-              log_income = "Log real income per capita"))|>
+               density = "Population density",
+               pop_growth = "Population growth (%)",
+               indigenous = "% indigenous identity",
+               immigrant = "% foreign-born",
+               ed_med = "% postsecondary education",
+               ed_high = "% college graduate",
+               gini = "Gini coefficient",
+               unemp = "Unemployment rate (%)",
+               manu_pct = "% employees in manufacturing",
+               log_income = "Log real per capita income",
+               smoke = "Smoking prevalence",
+               phys_per_cap = "Physicians (per 10,000)",
+               hlth_spend_pct = "Healthcare as % of GDP",
+               co2_per_cap = "CO<sub>2</sub> per capita",
+               crime = "Violent crime rate (per 10,000)"))|>
+  add_variable_group_header(header = "*Dependent variable*",
+                            variables = edag) |>
+  add_variable_group_header(header = "*Demographic predictors*",
+                            variables = c(indigenous, immigrant, pop_growth, density)) |>
+  add_variable_group_header(header = "*Socioeconomic predictors*",
+                            variables = c(ed_med, ed_high, log_income, gini, unemp, manu_pct)) |>
+  add_variable_group_header(header = "*Health predictors*",
+                            variables = c(smoke, phys_per_cap, hlth_spend_pct, co2_per_cap, crime)) |>
   modify_header(label = "Variables",
-                stat_1 = "N",
-                stat_2 = "Mean",
-                stat_3 = "Std. Dev.",
-                stat_4 = "Median",
-                stat_5 = "Min.",
-                stat_6 = "Max.") |>
+                stat_1 = "Mean",
+                stat_2 = "Std. Dev.",
+                stat_3 = "Median",
+                stat_4 = "Min.",
+                stat_5 = "Max.") |>
+  #modify_footer("Note: N = 200") |>
   as_gt() |>
     tab_header(title = md("**Table 1.** Descriptive statistics for regression variables")) |>  
+    tab_source_note(source_note = md("Note: *N* = 200.")) |>
     opt_align_table_header(align = "left") |>
     tab_options(heading.title.font.size = px(16),
+                source_notes.font.size = px(16),
                 table_body.hlines.style = "none",
                 table.font.names = "serif",
                 table.border.top.color = "white",
+                table.border.bottom.color = "white",
                 heading.border.bottom.color = "black",
                 column_labels.border.bottom.color = "black",
                 table_body.border.bottom.color = "black",
