@@ -58,10 +58,10 @@ install.packages("readxl")
 library(curl)
 library(readxl)
 
-url <- "https://www.cihi.ca/sites/default/files/document/nhex-appendices-a-d-2025-en.xlsx"
-destfile <- "nhex-appendices-a-d-2025-en.xlsx"
-curl_download(url, destfile)
-growth <- read_excel(destfile, sheet = "D — Pop", range = "A56:O107")
+url1 <- "https://www.cihi.ca/sites/default/files/document/nhex-appendices-a-d-2025-en.xlsx"
+destfile1 <- "nhex-appendices-a-d-2025-en.xlsx"
+curl_download(url1, destfile1)
+growth <- read_excel(destfile1, sheet = "D — Pop", range = "A56:O107")
 
 
 growth <- growth |>
@@ -79,6 +79,7 @@ growth_long <- growth |>
                values_to = "pop_growth")
 growth_long$pop_growth <- as.numeric((growth_long$pop_growth))
 summary(growth_long$pop_growth)
+
 
 # Gini coefficient ############################################################
   # Three different measures: adjusted market income, adjusted total income, and
@@ -298,7 +299,7 @@ immigrant_long <- rbind(immigrant_long, new_rows_imm)
 immigrant_long <- immigrant_long[order(immigrant_long$province, immigrant_long$year), ]
 
 
-# Impute missing smoke values in 2014, 2016, and 2018 by province
+# Impute missing immkgration percentages in intercensal years by province
 install.packages("simputation")
 library(simputation)
 
@@ -357,7 +358,7 @@ new_rows_ind <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
 indig_long <- rbind(indig_long, new_rows_ind)
 indig_long <- indig_long[order(indig_long$province, indig_long$year), ]
 
-# Impute missing smoke values in 2014, 2016, and 2018 by province
+# Impute missing indigenous values in 2intercensal years by province
 
 indig_long$yr0 <- indig_long$year - 2000
 
@@ -415,17 +416,16 @@ phys_per_cap$year <- as.character(phys_per_cap$year)
 rm(physicians, physicians_long)
 
 
-# Cigarette sales ##########################################################
-  # Visit https://health-infobase.canada.ca/substance-use/tobacco/sales/
-  # Download "Data - Tobacco sales.csv"
-  # This source combines tobacco sales for PEI with Yukon, Northwest Territories, and Nunavut
-#cigs <- read_csv("https://health-infobase.canada.ca/src/data/tobacco-sales/reformatted_data_2024.csv")
+# Smoking prevalence ##########################################################
+  # Wijesinghe et al. used cigarette sales (packs per capita). We use smoking
+  # prevalence.
 
+url2 <- "https://uwaterloo.ca/tobacco-use-canada/sites/default/files/uploads/files/table_2_1_smoking_prevalence_by_province_99-20.xlsx"
+destfile2 <- "table_2_1_smoking_prevalence_by_province_99-20.xlsx"
+curl_download(url2, destfile2)
+smoke <- read_excel(destfile2)
 
-# Smoking prevalence
-  # Wijesinghe et al. used cigarette sales (packs per capita)
-
-smoke <- read_csv("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/table_2_1_smoking_prevalence_by_province_99-20.csv")
+#smoke <- read_csv("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/table_2_1_smoking_prevalence_by_province_99-20.csv")
 names(smoke)[1] <- "province"
 smoke <- smoke[-1, ]  # remove Canada
 
@@ -442,6 +442,7 @@ smoke_long <- smoke |>
 
 smoke_long$year <- substring(smoke_long$year, 3)  # remove yr from beginning of years
 smoke_long$year <- as.numeric(smoke_long$year)
+  # I change year to numberic so it can be x variable in linear model
 
 ggplot(smoke_long, aes(x = year, y = smoke, color = province)) +
   geom_point() +
@@ -486,6 +487,8 @@ smoke_long_imp$year <- as.character(smoke_long_imp$year)
 
 smoke_long_imp <- smoke_long_imp |>
   select(year, province, smoke)
+
+smoke_long_imp$smoke <- round(smoke_long_imp$smoke, digits = 1)
 
 summary(smoke_long_imp$smoke)
 
@@ -592,10 +595,10 @@ gdp <- gdp |>
 
 
 # Health expenditure data
-url2 <- "https://www.cihi.ca/sites/default/files/document/nhex-open-data-2025-en.xlsx"
-destfile2 <- "nhex-open-data-2025-en.xlsx"
-curl_download(url2, destfile2)
-hlth_spend <- read_excel(destfile2, sheet = "Table O.1", range = "A3:I27849")
+url3 <- "https://www.cihi.ca/sites/default/files/document/nhex-open-data-2025-en.xlsx"
+destfile3 <- "nhex-open-data-2025-en.xlsx"
+curl_download(url3, destfile3)
+hlth_spend <- read_excel(destfile3, sheet = "Table O.1", range = "A3:I27849")
 
 hlth_spend <- hlth_spend |>
   filter(`Use of Funds` == "Total",
@@ -680,8 +683,7 @@ manufacture <- get_cansim("14-10-0023-01") |>
          GeoUID >= 10 & GeoUID <= 59,
          Gender == "Total - Gender",
          `Age group` == "15 years and over",
-         NAICS == "Total, all industries" |
-         NAICS == "Manufacturing",
+         NAICS == "Total, all industries" | NAICS == "Manufacturing",
          `Labour force characteristics` == "Employment") |>
   select(REF_DATE, GEO, NAICS, val_norm)
 
@@ -735,18 +737,27 @@ predictors <- df_list |>
   reduce(full_join, by = c("province", "year"))
 
 
+# Save predictors dataset to share with Dustin and Ben
+install.packages("haven")
+library(haven)
+
+write_dta(predictors, "predictors.dta")
+write.csv(predictors, "predictors.csv", row.names = F)
+
+
 # Replicate Table 1. Descriptive Statistics by Wijesinghe et al.
+install.packages("flextable")
 install.packages("gt")
 install.packages("gtsummary")
+install.packages("webshot2")  # needed for gt_save()
+library(flextable)
 library(gt)
 library(gtsummary)
-
-install.packages("flextable")
-library(flextable)
+library(webshot2)
 
 
 # Create table of descriptive statistics
-predictors |>
+descr_stats <- predictors |>
   tbl_wide_summary(include = -c(province, year),
               statistic = c("{mean}", "{sd}", "{median}", "{min}", "{max}"),
               digits = all_continuous() ~ c(2, 2, 2, 2, 2),
@@ -765,7 +776,7 @@ predictors |>
                phys_per_cap = "Physicians (per 10,000)",
                hlth_spend_pct = "Healthcare as % of GDP",
                co2_per_cap = "CO<sub>2</sub> per capita",
-               crime = "Violent crime rate (per 10,000)"))|>
+               crime = "Violent crime rate (per 10,000)")) |>
   add_variable_group_header(header = "*Dependent variable*",
                             variables = edag) |>
   add_variable_group_header(header = "*Demographic predictors*",
@@ -796,8 +807,15 @@ predictors |>
                 table_body.border.bottom.color = "black",
                 table.font.color = "black") |>
   opt_vertical_padding(scale = 0.2) |>
-  gt::fmt_markdown(columns = c(label))  # This allows sup
-  
+  gt::fmt_markdown(columns = c(label))  
+
+
+# Save table of descriptive statistics
+
+descr_stats |> 
+  gtsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/descr_stats.png")
+
+
   # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 
   #   subscript in row labels.
 
@@ -814,5 +832,7 @@ predictors |>
 
 # source for subscript: https://stackoverflow.com/questions/60534214/how-do-i-add-subscripts-to-labels-in-tables-using-the-gtsummary-package-in-r
 
-#show_header_names(table1)
 
+# Correlation matrix
+predictors_cor <- predictors |> select(-c(province, year))
+cor(predictors_cor)

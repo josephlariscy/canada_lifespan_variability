@@ -1,11 +1,15 @@
 
 install.packages("HMDHFDplus")
-install_github("alysonvanraalte/LifeIneq")
 install.packages("remotes")
+install.packages("dplyr")
 
 library(HMDHFDplus)
-library(LifeIneq)
 library(remotes)
+library(dplyr)
+
+install_github("alysonvanraalte/LifeIneq")
+library(LifeIneq)
+
 
 getCHMDprovinces()
 
@@ -252,6 +256,7 @@ for (i in seq_along(years)) {
 
 # Combine all years into one data frame
 sas_reg_edag <- do.call(rbind, results)
+
 
 # Combine e-dagger-0 values for all 10 provinces
 e_dagger <- rbind(alb_reg_edag, bco_reg_edag, man_reg_edag, nbr_reg_edag,
