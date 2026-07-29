@@ -7,9 +7,11 @@
 install.packages("ggplot2")
 install.packages("HMDHFDplus")
 install.packages("remotes")
+install.packages("tidyverse")
 library(ggplot2)
 library(HMDHFDplus)
 library(remotes)
+library(tidyverse)
 
 install_github("alysonvanraalte/LifeIneq")
 library(LifeIneq)
@@ -22,7 +24,7 @@ HMDcountries <- getHMDcountries()
 # Read-in life tables for both sexes combined
 # 1x5 indicates single year of age and five-year time periods
 
-# Before importing life tables, input username and password 
+# Before importing life tables, input HMD username and password 
   # us <- "joseph.lariscy@memphis.edu"
   # pw <- "M...n
 
@@ -30,136 +32,140 @@ HMDcountries <- getHMDcountries()
 
 AUS <- readHMDweb(CNTRY = "AUS", item = "bltper_1x5", username=us, password=pw)  # Australia
 AUT <- readHMDweb(CNTRY = "AUT", item = "bltper_1x5", username=us, password=pw)  # Austria
-#BLR <- readHMDweb(CNTRY = "BLR", item = "bltper_1x5", username=us, password=pw)  # Belarus
 BEL <- readHMDweb(CNTRY = "BEL", item = "bltper_1x5", username=us, password=pw)  # Belgium
 BGR <- readHMDweb(CNTRY = "BEL", item = "bltper_1x5", username=us, password=pw)  # Bulgaria
 CAN <- readHMDweb(CNTRY = "CAN", item = "bltper_1x5", username=us, password=pw)  # Canada
-#CHL <- readHMDweb(CNTRY = "CHL", item = "bltper_1x5", username=us, password=pw)  # Chile
-#HRV <- readHMDweb(CNTRY = "HRV", item = "bltper_1x5", username=us, password=pw)  # Croatia
 CZE <- readHMDweb(CNTRY = "CZE", item = "bltper_1x5", username=us, password=pw)  # Czechia
 DNK <- readHMDweb(CNTRY = "DNK", item = "bltper_1x5", username=us, password=pw)  # Denmark
-#EST <- readHMDweb(CNTRY = "EST", item = "bltper_1x5", username=us, password=pw)  # Estonia
 FIN <- readHMDweb(CNTRY = "FIN", item = "bltper_1x5", username=us, password=pw)  # Finland
 FRATNP <- readHMDweb(CNTRY = "FRATNP", item = "bltper_1x5", username=us, password=pw)  # France
-#DEUTNP <- readHMDweb(CNTRY = "DEUTNP", item = "bltper_1x5", username=us, password=pw)  # Germany
-#GRC <- readHMDweb(CNTRY = "GRC", item = "bltper_1x5", username=us, password=pw)  # Greece
-#HKG <- readHMDweb(CNTRY = "HKG", item = "bltper_1x5", username=us, password=pw)  # Hong Kong
 HUN <- readHMDweb(CNTRY = "HUN", item = "bltper_1x5", username=us, password=pw)  # Hungary
 ISL <- readHMDweb(CNTRY = "ISL", item = "bltper_1x5", username=us, password=pw)  # Iceland
 IRL <- readHMDweb(CNTRY = "IRL", item = "bltper_1x5", username=us, password=pw)  # Ireland
-#ISR <- readHMDweb(CNTRY = "ISR", item = "bltper_1x5", username=us, password=pw)  # Israel
 ITA <- readHMDweb(CNTRY = "ITA", item = "bltper_1x5", username=us, password=pw)  # Italy
 JPN <- readHMDweb(CNTRY = "JPN", item = "bltper_1x5", username=us, password=pw)  # Japan
-#LVA <- readHMDweb(CNTRY = "LVA", item = "bltper_1x5", username=us, password=pw)  # Latvia
-#LTU <- readHMDweb(CNTRY = "LTU", item = "bltper_1x5", username=us, password=pw)  # Lithuania
-#LUX <- readHMDweb(CNTRY = "LUX", item = "bltper_1x5", username=us, password=pw)  # Luxembourg
 NLD <- readHMDweb(CNTRY = "NLD", item = "bltper_1x5", username=us, password=pw)  # Netherlands
 NZL_NP <- readHMDweb(CNTRY = "NZL_NP", item = "bltper_1x5", username=us, password=pw)  # New Zealand
 NOR <- readHMDweb(CNTRY = "NOR", item = "bltper_1x5", username=us, password=pw)  # Norway
-#POL <- readHMDweb(CNTRY = "POL", item = "bltper_1x5", username=us, password=pw)  # Poland
 PRT <- readHMDweb(CNTRY = "PRT", item = "bltper_1x5", username=us, password=pw)  # Portugal
-#KOR <- readHMDweb(CNTRY = "KOR", item = "bltper_1x5", username=us, password=pw)  # Republic of Korea
-#RUS <- readHMDweb(CNTRY = "RUS", item = "bltper_1x5", username=us, password=pw)  # Russia
 SVK <- readHMDweb(CNTRY = "SVK", item = "bltper_1x5", username=us, password=pw)  # Slovakia
-#SVN <- readHMDweb(CNTRY = "SVN", item = "bltper_1x5", username=us, password=pw)  # Slovenia
 ESP <- readHMDweb(CNTRY = "ESP", item = "bltper_1x5", username=us, password=pw)  # Spain
 SWE <- readHMDweb(CNTRY = "SWE", item = "bltper_1x5", username=us, password=pw)  # Sweden
 CHE <- readHMDweb(CNTRY = "CHE", item = "bltper_1x5", username=us, password=pw)  # Switzerland
-#TWN <- readHMDweb(CNTRY = "TWN", item = "bltper_1x5", username=us, password=pw)  # Taiwan
 GBRTENW <- readHMDweb(CNTRY = "GBRTENW", item = "bltper_1x5", username=us, password=pw)  # England and Wales
 USA <- readHMDweb(CNTRY = "USA", item = "bltper_1x5", username=us, password=pw)  # United States
+
+#BLR <- readHMDweb(CNTRY = "BLR", item = "bltper_1x5", username=us, password=pw)  # Belarus
+#CHL <- readHMDweb(CNTRY = "CHL", item = "bltper_1x5", username=us, password=pw)  # Chile
+#HRV <- readHMDweb(CNTRY = "HRV", item = "bltper_1x5", username=us, password=pw)  # Croatia
+#EST <- readHMDweb(CNTRY = "EST", item = "bltper_1x5", username=us, password=pw)  # Estonia
+#DEUTNP <- readHMDweb(CNTRY = "DEUTNP", item = "bltper_1x5", username=us, password=pw)  # Germany
+#GRC <- readHMDweb(CNTRY = "GRC", item = "bltper_1x5", username=us, password=pw)  # Greece
+#HKG <- readHMDweb(CNTRY = "HKG", item = "bltper_1x5", username=us, password=pw)  # Hong Kong
+#ISR <- readHMDweb(CNTRY = "ISR", item = "bltper_1x5", username=us, password=pw)  # Israel
+#LVA <- readHMDweb(CNTRY = "LVA", item = "bltper_1x5", username=us, password=pw)  # Latvia
+#LTU <- readHMDweb(CNTRY = "LTU", item = "bltper_1x5", username=us, password=pw)  # Lithuania
+#LUX <- readHMDweb(CNTRY = "LUX", item = "bltper_1x5", username=us, password=pw)  # Luxembourg
+#POL <- readHMDweb(CNTRY = "POL", item = "bltper_1x5", username=us, password=pw)  # Poland
+#KOR <- readHMDweb(CNTRY = "KOR", item = "bltper_1x5", username=us, password=pw)  # Republic of Korea
+#RUS <- readHMDweb(CNTRY = "RUS", item = "bltper_1x5", username=us, password=pw)  # Russia
+#SVN <- readHMDweb(CNTRY = "SVN", item = "bltper_1x5", username=us, password=pw)  # Slovenia
+#TWN <- readHMDweb(CNTRY = "TWN", item = "bltper_1x5", username=us, password=pw)  # Taiwan
 #UKR <- readHMDweb(CNTRY = "UKR", item = "bltper_1x5", username=us, password=pw)  # Ukraine
+
 
 
 # Limit to five-year intervals 1950-1954 to 2015-2019
 # Some countries do not have data for that entire period
 AUS <- AUS[AUS$Year >= 1950 & AUS$Year <= 2015, ]
 AUT <- AUT[AUT$Year >= 1950 & AUT$Year <= 2015, ]
-BLR <- BLR[BLR$Year >= 1950 & BLR$Year <= 2015, ]
 BEL <- BEL[BEL$Year >= 1950 & BEL$Year <= 2015, ]
 BGR <- BGR[BGR$Year >= 1950 & BGR$Year <= 2015, ]
 CAN <- CAN[CAN$Year >= 1950 & CAN$Year <= 2015, ]
-CHL <- CHL[CHL$Year >= 1950 & CHL$Year <= 2015, ]
-HRV <- HRV[HRV$Year >= 1950 & HRV$Year <= 2015, ]
 CZE <- CZE[CZE$Year >= 1950 & CZE$Year <= 2015, ]
 DNK <- DNK[DNK$Year >= 1950 & DNK$Year <= 2015, ]
-EST <- EST[EST$Year >= 1950 & EST$Year <= 2015, ]
 FIN <- FIN[FIN$Year >= 1950 & FIN$Year <= 2015, ]
 FRATNP <- FRATNP[FRATNP$Year >= 1950 & FRATNP$Year <= 2015, ]
-DEUTNP <- DEUTNP[DEUTNP$Year >= 1950 & DEUTNP$Year <= 2015, ]
-GRC <- GRC[GRC$Year >= 1950 & GRC$Year <= 2015, ]
-HKG <- HKG[HKG$Year >= 1950 & HKG$Year <= 2015, ]
 HUN <- HUN[HUN$Year >= 1950 & HUN$Year <= 2015, ]
 ISL <- ISL[ISL$Year >= 1950 & ISL$Year <= 2015, ]
 IRL <- IRL[IRL$Year >= 1950 & IRL$Year <= 2015, ]
-ISR <- ISR[ISR$Year >= 1950 & ISR$Year <= 2015, ]
 ITA <- ITA[ITA$Year >= 1950 & ITA$Year <= 2015, ]
 JPN <- JPN[JPN$Year >= 1950 & JPN$Year <= 2015, ]
-LVA <- LVA[LVA$Year >= 1950 & LVA$Year <= 2015, ]
-LTU <- LTU[LTU$Year >= 1950 & LTU$Year <= 2015, ]
-LUX <- LUX[LUX$Year >= 1950 & LUX$Year <= 2015, ]
 NLD <- NLD[NLD$Year >= 1950 & NLD$Year <= 2015, ]
 NZL_NP <- NZL_NP[NZL_NP$Year >= 1950 & NZL_NP$Year <= 2015, ]
 NOR <- NOR[NOR$Year >= 1950 & NOR$Year <= 2015, ]
-POL <- POL[POL$Year >= 1950 & POL$Year <= 2015, ]
 PRT <- PRT[PRT$Year >= 1950 & PRT$Year <= 2015, ]
-KOR <- KOR[KOR$Year >= 1950 & KOR$Year <= 2015, ]
-RUS <- RUS[RUS$Year >= 1950 & RUS$Year <= 2015, ]
 SVK <- SVK[SVK$Year >= 1950 & SVK$Year <= 2015, ]
-SVN <- SVN[SVN$Year >= 1950 & SVN$Year <= 2015, ]
 ESP <- ESP[ESP$Year >= 1950 & ESP$Year <= 2015, ]
 SWE <- SWE[SWE$Year >= 1950 & SWE$Year <= 2015, ]
 CHE <- CHE[CHE$Year >= 1950 & CHE$Year <= 2015, ]
-TWN <- TWN[TWN$Year >= 1950 & TWN$Year <= 2015, ]
 GBRTENW <- GBRTENW[GBRTENW$Year >= 1950 & GBRTENW$Year <= 2015, ]
 USA <- USA[USA$Year >= 1950 & USA$Year <= 2015, ]
-UKR <- UKR[UKR$Year >= 1950 & UKR$Year <= 2015, ]
 
+#BLR <- BLR[BLR$Year >= 1950 & BLR$Year <= 2015, ]
+#CHL <- CHL[CHL$Year >= 1950 & CHL$Year <= 2015, ]
+#HRV <- HRV[HRV$Year >= 1950 & HRV$Year <= 2015, ]
+#EST <- EST[EST$Year >= 1950 & EST$Year <= 2015, ]
+#DEUTNP <- DEUTNP[DEUTNP$Year >= 1950 & DEUTNP$Year <= 2015, ]
+#GRC <- GRC[GRC$Year >= 1950 & GRC$Year <= 2015, ]
+#HKG <- HKG[HKG$Year >= 1950 & HKG$Year <= 2015, ]
+#ISR <- ISR[ISR$Year >= 1950 & ISR$Year <= 2015, ]
+#LVA <- LVA[LVA$Year >= 1950 & LVA$Year <= 2015, ]
+#LTU <- LTU[LTU$Year >= 1950 & LTU$Year <= 2015, ]
+#LUX <- LUX[LUX$Year >= 1950 & LUX$Year <= 2015, ]
+#POL <- POL[POL$Year >= 1950 & POL$Year <= 2015, ]
+#KOR <- KOR[KOR$Year >= 1950 & KOR$Year <= 2015, ]
+#RUS <- RUS[RUS$Year >= 1950 & RUS$Year <= 2015, ]
+#SVN <- SVN[SVN$Year >= 1950 & SVN$Year <= 2015, ]
+#TWN <- TWN[TWN$Year >= 1950 & TWN$Year <= 2015, ]
+#UKR <- UKR[UKR$Year >= 1950 & UKR$Year <= 2015, ]
 
 
 # Add column with province abbreviation
 AUS <- cbind(country = "Australia", AUS)
 AUT <- cbind(country = "Austria", AUT)
-BLR <- cbind(country = "Belarus", BLR)
 BEL <- cbind(country = "Belgium", BEL)
 BGR <- cbind(country = "Bulgaria", BGR)
 BGR <- cbind(country = "Bulgaria", BGR)
 CAN <- cbind(country = "Canada", CAN)
-CHL <- cbind(country = "Chile", CHL)
-HRV <- cbind(country = "Bosnia", HRV)
 CZE <- cbind(country = "Czechia", CZE)
 DNK <- cbind(country = "Denmark", DNK)
-EST <- cbind(country = "Estonia", EST)
 FIN <- cbind(country = "Finland", FIN)
 FRATNP <- cbind(country = "France", FRATNP)
-DEUTNP <- cbind(country = "Germany", DEUTNP)
-GRC <- cbind(country = "Greece", GRC)
-HKG <- cbind(country = "Hong Kong", HKG)
 HUN <- cbind(country = "Hungary", HUN)
 ISL <- cbind(country = "Iceland", ISL)
 IRL <- cbind(country = "Ireland", IRL)
-ISR <- cbind(country = "Israel", ISR)
 ITA <- cbind(country = "Italy", ITA)
 JPN <- cbind(country = "Japan", JPN)
-LVA <- cbind(country = "Latvia", LVA)
-LTU <- cbind(country = "Lithuania", LTU)
-LUX <- cbind(country = "Luxembourg", LUX)
 NLD <- cbind(country = "Netherlands", NLD)
 NZL_NP <- cbind(country = "New Zealand", NZL_NP)
 NOR <- cbind(country = "Norway", NOR)
-POL <- cbind(country = "Poland", POL)
 PRT <- cbind(country = "Portugal", PRT)
-KOR <- cbind(country = "Republic of Korea", KOR)
-RUS <- cbind(country = "Russia", RUS)
 SVK <- cbind(country = "Slovakia", SVK)
-SVN <- cbind(country = "Slovenia", SVN)
 ESP <- cbind(country = "Spain", ESP)
 SWE <- cbind(country = "Sweden", SWE)
 CHE <- cbind(country = "Switzerland", CHE)
-TWN <- cbind(country = "Taiwan", TWN)
 GBRTENW <- cbind(country = "England & Wales", GBRTENW)
 USA <- cbind(country = "United States", USA)
-UKR <- cbind(country = "Ukraine", UKR)
+
+
+#BLR <- cbind(country = "Belarus", BLR)
+#CHL <- cbind(country = "Chile", CHL)
+#HRV <- cbind(country = "Bosnia", HRV)
+#EST <- cbind(country = "Estonia", EST)
+#DEUTNP <- cbind(country = "Germany", DEUTNP)
+#GRC <- cbind(country = "Greece", GRC)
+#HKG <- cbind(country = "Hong Kong", HKG)
+#ISR <- cbind(country = "Israel", ISR)
+#LVA <- cbind(country = "Latvia", LVA)
+#LTU <- cbind(country = "Lithuania", LTU)
+#LUX <- cbind(country = "Luxembourg", LUX)
+#POL <- cbind(country = "Poland", POL)
+#KOR <- cbind(country = "Republic of Korea", KOR)
+#RUS <- cbind(country = "Russia", RUS)
+#SVN <- cbind(country = "Slovenia", SVN)
+#TWN <- cbind(country = "Taiwan", TWN)
+#UKR <- cbind(country = "Ukraine", UKR)
 
 
 # Calculating e-dagger for each country, using a for loop
@@ -559,7 +565,7 @@ GBRTENW2005$dx[111] <- GBRTENW2005$lx[111]  # age 110
 GBRTENW_1950_2000 <- GBRTENW[GBRTENW$Year >= 1950 & GBRTENW$Year <= 2000, ]
 GBRTENW_2010_2015 <- GBRTENW[GBRTENW$Year >= 2010 & GBRTENW$Year <= 2015, ]
 
-GBRTENW <- rbind(GBRTENW_1950_2000, GBRTENW2005, pei_reg_2010_2015)
+GBRTENW <- rbind(GBRTENW_1950_2000, GBRTENW2005, GBRTENW_2010_2015)
 
 
 # Empty list to store results
@@ -611,6 +617,14 @@ avg_edag <- HMD_edag |>
   relocate(country, Year, edag)
 
 HMD_edag <- rbind(avg_edag, HMD_edag)
+HMD_edag$group <- NA
+HMD_edag$group[HMD_edag$country == "Average"] = "Average"
+HMD_edag$group[HMD_edag$country == "Canada"] = "Canada"
+HMD_edag$group[HMD_edag$country == "United States"] = "United States"
+HMD_edag$group[HMD_edag$country != "Average"  &
+               HMD_edag$country !=  "Canada" &
+               HMD_edag$country != "United States"] = "Other HMD countries"
+
 
 
 # Figure
@@ -618,21 +632,21 @@ install.packages("scales")
 library(scales)
 
 # Value labels for x-axis
-year.lbl <- c("1950\u20131954", "1955\u20131959",
-  "1960\u20131964", "1965\u20131969", "1970\u20131974",
-              "1975\u20131979", "1980\u20131984", "1985\u20131989",
-              "1990\u20131994", "1995\u20131999", "2000\u20132004",
-              "2005\u20132009", "2010\u20132014", "2015\u20132019")
+year.lbl <- c("1950\u20131954", "1955\u20131959", "1960\u20131964", 
+              "1965\u20131969", "1970\u20131974", "1975\u20131979", 
+              "1980\u20131984", "1985\u20131989", "1990\u20131994", 
+              "1995\u20131999", "2000\u20132004", "2005\u20132009", 
+              "2010\u20132014", "2015\u20132019")
 # \u2013 makes an endash
 
 ggplot(HMD_edag, aes(x = Year, y = edag, color = country)) +
   geom_line()
 
 ggplot(HMD_edag, aes(x = Year, y = edag, group = country)) +
-       geom_line(data = HMD_edag, size = 0.8, color = "grey") +
-       geom_line(data = CANedag, size = 1.1, color = "red") +
-       geom_line(data = USAedag, size = 1.1, color = "blue") +
-       geom_line(data = avg_edag, size = 1.1, color = "black") +
+       geom_line(data = HMD_edag, linewidth = 0.8, color = "grey") +
+       geom_line(data = CANedag, linewidth = 1.1, color = "red") +
+       geom_line(data = USAedag, linewidth = 1.1, color = "blue") +
+       geom_line(data = avg_edag, linewidth = 1.1, color = "black") +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
 theme_bw() +
