@@ -618,13 +618,30 @@ avg_edag <- HMD_edag |>
 
 HMD_edag <- rbind(avg_edag, HMD_edag)
 HMD_edag$group <- NA
-HMD_edag$group[HMD_edag$country == "Average"] = "Average"
-HMD_edag$group[HMD_edag$country == "Canada"] = "Canada"
-HMD_edag$group[HMD_edag$country == "United States"] = "United States"
 HMD_edag$group[HMD_edag$country != "Average"  &
                HMD_edag$country !=  "Canada" &
                HMD_edag$country != "United States"] = "Other HMD countries"
+HMD_edag$group[HMD_edag$country == "Average"] = "Average"
+HMD_edag$group[HMD_edag$country == "United States"] = "United States"
+HMD_edag$group[HMD_edag$country == "Canada"] = "Canada"
 
+#HMD_edag$group <- as.factor(HMD_edag$group)
+
+
+# Make a highlight column
+HMD_edag <- HMD_edag |>
+  mutate(highlight_group = if_else(country %in% c("Canada", 
+                                                  "United States", 
+                                                  "Average"), 
+                                   country, "Other HMD countries"))
+  # By creating the highlight_group indicator here, a legend will automatically
+  # be created in the plot with countries listed in this order.
+
+# Manually change the order of in the legend
+HMD_edag <- HMD_edag |>
+  mutate(highlight_group = fct_relevel(highlight_group,
+                                       "Canada", "Average",
+                               "Other HMD countries"))
 
 
 # Figure
@@ -642,14 +659,45 @@ year.lbl <- c("1950\u20131954", "1955\u20131959", "1960\u20131964",
 ggplot(HMD_edag, aes(x = Year, y = edag, color = country)) +
   geom_line()
 
-ggplot(HMD_edag, aes(x = Year, y = edag, group = country)) +
-       geom_line(data = HMD_edag, linewidth = 0.8, color = "grey") +
-       geom_line(data = CANedag, linewidth = 1.1, color = "red") +
-       geom_line(data = USAedag, linewidth = 1.1, color = "blue") +
-       geom_line(data = avg_edag, linewidth = 1.1, color = "black") +
+ggplot(HMD_edag, aes(x = Year, y = edag, group = fct_rev(country), color = highlight_group)) +
+  geom_line(aes(linewidth = highlight_group)) +
+  scale_color_manual(values = c("Other HMD countries" = "gray80",
+                                "Average" = "black",
+                                "United States" = "blue",
+                                "Canada" = "red")) +
+  scale_linewidth_manual(values = c("Other HMD countries" = 0.6,
+                                    "Canada" = 1.1,
+                                    "Average" = 1.1,
+                                    "United States" = 1.1)) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
 theme_bw() +
+  theme(axis.text.x = element_text(color = "black", angle = 45, hjust = 1),
+        axis.text.y = element_text(color = "black"),
+        text = element_text(family = "serif"),
+        strip.text = element_text(face = "bold"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "inside",
+        legend.position.inside = c(0.7, 0.8),
+        legend.key.spacing.y = unit(-0.15, "cm")) +
+  coord_cartesian(ylim = c(8, 18)) +
+  scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
+  scale_x_continuous(breaks = seq(1950, 2015, by = 5), labels = year.lbl)
+
+# group = fct_rev(country) changes the order of the lines  
+
+
+# conserve code that worked but without legend
+ggplot(HMD_edag, aes(x = Year, y = edag, group = country)) +
+  geom_line(data = HMD_edag, linewidth = 0.8, color = "grey") +
+  geom_line(data = CANedag, linewidth = 1.1, color = "red") +
+  geom_line(data = USAedag, linewidth = 1.1, color = "blue") +
+  geom_line(data = avg_edag, linewidth = 1.1, color = "black") +
+  ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
+  xlab(expression(bold("Year"))) +
+  theme_bw() +
   theme(axis.text.x = element_text(color = "black", angle = 45, hjust = 1),
         axis.text.y = element_text(color = "black"),
         text = element_text(family = "serif"),
@@ -660,5 +708,3 @@ theme_bw() +
   coord_cartesian(ylim = c(8, 18)) +
   scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
   scale_x_continuous(breaks = seq(1950, 2015, by = 5), labels = year.lbl)
-  
-
