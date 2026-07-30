@@ -13,6 +13,267 @@ library(reshape2)
 library(tidyverse)
 
 
+# Gini coefficient ############################################################
+# Three different measures: adjusted market income, adjusted total income, and
+# adjusted after-tax income. I picked "Adjusted total income."
+gini <- get_cansim("11-10-0134-01") |>
+  mutate(GeoUID = as.numeric(GeoUID)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         GeoUID >= 10 & GeoUID <= 59,
+         `Income concept` == "Adjusted total income") |>
+  rename(year = REF_DATE,
+         province = GEO,
+         gini = VALUE) |>
+  select(year, province, gini)
+
+gini <- gini |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia"))
+
+gini$province <- as.character(gini$province)
+gini <- gini[order(gini$province), ]
+summary(gini$gini)
+
+
+# Educational attainment #######################################################
+educ <- get_cansim("37-10-0130-01") |>
+  mutate(GeoUID = as.numeric(GeoUID)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         GeoUID >= 10 & GeoUID <= 59,
+         `Age group` == "Total, 25 to 64 years" & 
+           Gender == "Total - Gender")
+
+
+# Medium education
+ed_med <- educ |>
+  filter(`Education attainment level` == "Upper secondary or above") |>
+  rename(year = REF_DATE,
+         province = GEO,
+         ed_med = val_norm) |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia")) |>
+  select(year, province, ed_med)
+
+# Change province from factor to character so it can be sorted into 
+# alphabetical order
+ed_med$province <- as.character(ed_med$province)
+ed_med <- ed_med[order(ed_med$province), ]
+summary(ed_med$ed_med)
+
+
+# High education
+# Restrict the education table to just BA and Master's/PhD rows
+ed_high_2cats <- educ |>
+  filter(`Education attainment level` == "Bachelor's level" |
+           `Education attainment level` == "Master's or Doctoral level")
+
+# Add the proportions with BA and Master's/PhD
+ed_high <- ed_high_2cats |>
+  group_by(REF_DATE, GEO) |>
+  reframe(
+    # Create and add the summary row
+    data.frame(`Education attainment level` = "ed_high",
+               val_norm = sum(val_norm[`Education attainment level` %in% c("Bachelor's level",
+                                                                           "Master's or Doctoral level")])))
+
+# Clean
+ed_high <- ed_high |>
+  rename(year = REF_DATE,
+         province = GEO,
+         ed_high = val_norm) |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia")) |>
+  select(year, province, ed_high)
+
+# Change province from factor to character so it can be sorted into 
+# alphabetical order
+ed_high$province <- as.character(ed_high$province)
+ed_high <- ed_high[order(ed_high$province), ]
+summary(ed_high$ed_high)
+
+
+# Log real per capita income #################################################
+# In 2024 constant dollars
+
+income <- get_cansim("11-10-0239-01") |>
+  mutate(GeoUID = as.numeric(GeoUID),
+         log_income = log10(VALUE)) |>
+  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
+         `Age group` == "15 years and over",
+         Gender == "Total - Gender",
+         Statistics == "Average income (excluding zeros)",
+         `Income source` == "Total income",
+         GeoUID >= 10 & GeoUID <= 59)
+
+# Clean
+income <- income |>
+  rename(year = REF_DATE,
+         province = GEO) |>
+  mutate(province = fct_recode(province,
+                               "nfl" = "Newfoundland and Labrador",
+                               "pei" = "Prince Edward Island",
+                               "nsc" = "Nova Scotia",
+                               "nbr" = "New Brunswick",
+                               "que" = "Quebec",
+                               "ont" = "Ontario",
+                               "man" = "Manitoba",
+                               "sas" = "Saskatchewan",
+                               "alb" = "Alberta",
+                               "bco" = "British Columbia")) |>
+  select(year, province, log_income)
+
+income$province <- as.character(income$province)
+income <- income[order(income$province), ]
+summary(income$log_income)
+
+
+# Percentage foreign-born ######################################################
+# From Census years 2001, 2006, 2011, 2016, and 2021
+
+immigrant <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/immigrant percentage.xlsx", sheet = "immigrants")
+
+immigrant_long <- immigrant |>
+  pivot_longer(cols = starts_with("20"),
+               names_to = "year",
+               values_to = "immigrant")
+
+immigrant_long$year <- as.numeric(immigrant_long$year)
+# convert year from character to numeric for lm lines in geom_smooth()
+
+ggplot(immigrant_long, aes(x = year, y = immigrant, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+immigrant_long <- immigrant_long |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+
+# Add rows with missing values for immigrant % for intercensal years
+new_rows_imm <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
+                                            "ont", "man", "sas", "alb", "bco"), each = 17),
+                           year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
+                           immigrant = rep(NA, times = 170))
+
+immigrant_long <- rbind(immigrant_long, new_rows_imm)
+immigrant_long <- immigrant_long[order(immigrant_long$province, immigrant_long$year), ]
+
+
+# Impute missing immkgration percentages in intercensal years by province
+install.packages("simputation")
+library(simputation)
+
+immigrant_long$yr0 <- immigrant_long$year - 2000
+
+immigrant_long_imp <- immigrant_long |>
+  group_by(province) |>
+  impute_lm(immigrant ~ yr0)
+
+# Convert year from numeric to character
+immigrant_long_imp$year <- as.character(immigrant_long_imp$year)
+
+immigrant_long_imp <- immigrant_long_imp |>
+  filter(year >= 2000 & year <= 2019) |>
+  select(year, province, immigrant)
+
+summary(immigrant_long_imp$immigrant)
+
+
+# Percentage indigenous ########################################################
+# From Census years 2001, 2006, 2011, 2016, and 2021
+
+indig <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/aboriginal percentage.xlsx", sheet = "indigenous")
+
+indig_long <- indig |>
+  pivot_longer(cols = starts_with("20"),
+               names_to = "year",
+               values_to = "indigenous")
+
+indig_long$year <- as.numeric(indig_long$year)
+# convert year from character to numeric for lm lines in geom_smooth()
+
+ggplot(indig_long, aes(x = year, y = indigenous, color = province)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+indig_long <- indig_long |>
+  mutate(province = recode(province, 
+                           "Newfoundland and Labrador" = "nfl",
+                           "Prince Edward Island" = "pei",
+                           "Nova Scotia" = "nsc",
+                           "New Brunswick" = "nbr",
+                           "Quebec" = "que",
+                           "Ontario" = "ont",
+                           "Manitoba" = "man",
+                           "Saskatchewan" = "sas",
+                           "Alberta" = "alb",
+                           "British Columbia" = "bco"))
+
+# Add rows with missing values for indigenous % for intercensal years
+new_rows_ind <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
+                                            "ont", "man", "sas", "alb", "bco"), each = 17),
+                           year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
+                           indigenous = rep(NA, times = 170))
+
+indig_long <- rbind(indig_long, new_rows_ind)
+indig_long <- indig_long[order(indig_long$province, indig_long$year), ]
+
+# Impute missing indigenous values in 2intercensal years by province
+
+indig_long$yr0 <- indig_long$year - 2000
+
+indig_long_imp <- indig_long |>
+  group_by(province) |>
+  impute_lm(indigenous ~ yr0)
+
+# Convert year from numeric to character
+indig_long_imp$year <- as.character(indig_long_imp$year)
+
+indig_long_imp <- indig_long_imp |>
+  filter(year >= 2000 & year <= 2019) |>
+  select(year, province, indigenous)
+
+summary(indig_long_imp$indigenous)
+
+
+# Other variables we considered but will not include
+
 # Mid-year population ##########################################################
   # Data from 1971 to 2025
 pop <- get_cansim("17-10-0005-01") |>
@@ -81,145 +342,6 @@ growth_long$pop_growth <- as.numeric((growth_long$pop_growth))
 summary(growth_long$pop_growth)
 
 
-# Gini coefficient ############################################################
-  # Three different measures: adjusted market income, adjusted total income, and
-  # adjusted after-tax income. I picked "Adjusted total income."
-gini <- get_cansim("11-10-0134-01") |>
-                   mutate(GeoUID = as.numeric(GeoUID)) |>
-                   filter(REF_DATE >= 2000 & REF_DATE <= 2019,
-                          GeoUID >= 10 & GeoUID <= 59,
-                          `Income concept` == "Adjusted total income") |>
-                   rename(year = REF_DATE,
-                          province = GEO,
-                          gini = VALUE) |>
-                   select(year, province, gini)
-
-gini <- gini |>
-  mutate(province = fct_recode(province,
-                               "nfl" = "Newfoundland and Labrador",
-                               "pei" = "Prince Edward Island",
-                               "nsc" = "Nova Scotia",
-                               "nbr" = "New Brunswick",
-                               "que" = "Quebec",
-                               "ont" = "Ontario",
-                               "man" = "Manitoba",
-                               "sas" = "Saskatchewan",
-                               "alb" = "Alberta",
-                               "bco" = "British Columbia"))
-
-gini$province <- as.character(gini$province)
-gini <- gini[order(gini$province), ]
-summary(gini$gini)
-
-
-# Educational attainment #######################################################
-educ <- get_cansim("37-10-0130-01") |>
-        mutate(GeoUID = as.numeric(GeoUID)) |>
-               filter(REF_DATE >= 2000 & REF_DATE <= 2019,
-               GeoUID >= 10 & GeoUID <= 59,
-               `Age group` == "Total, 25 to 64 years" & 
-               Gender == "Total - Gender")
-
-
-# Medium education
-ed_med <- educ |>
-  filter(`Education attainment level` == "Upper secondary or above") |>
-  rename(year = REF_DATE,
-         province = GEO,
-         ed_med = val_norm) |>
-  mutate(province = fct_recode(province,
-                               "nfl" = "Newfoundland and Labrador",
-                               "pei" = "Prince Edward Island",
-                               "nsc" = "Nova Scotia",
-                               "nbr" = "New Brunswick",
-                               "que" = "Quebec",
-                               "ont" = "Ontario",
-                               "man" = "Manitoba",
-                               "sas" = "Saskatchewan",
-                               "alb" = "Alberta",
-                               "bco" = "British Columbia")) |>
-  select(year, province, ed_med)
-
-# Change province from factor to character so it can be sorted into 
-# alphabetical order
-ed_med$province <- as.character(ed_med$province)
-ed_med <- ed_med[order(ed_med$province), ]
-summary(ed_med$ed_med)
-
-
-# High education
-  # Restrict the education table to just BA and Master's/PhD rows
-ed_high_2cats <- educ |>
-  filter(`Education attainment level` == "Bachelor's level" |
-         `Education attainment level` == "Master's or Doctoral level")
-
-# Add the proportions with BA and Master's/PhD
-ed_high <- ed_high_2cats |>
-  group_by(REF_DATE, GEO) |>
-  reframe(
-    # Create and add the summary row
-    data.frame(`Education attainment level` = "ed_high",
-               val_norm = sum(val_norm[`Education attainment level` %in% c("Bachelor's level",
-                                                       "Master's or Doctoral level")])))
-
-# Clean
-ed_high <- ed_high |>
-  rename(year = REF_DATE,
-         province = GEO,
-         ed_high = val_norm) |>
-  mutate(province = fct_recode(province,
-                               "nfl" = "Newfoundland and Labrador",
-                               "pei" = "Prince Edward Island",
-                               "nsc" = "Nova Scotia",
-                               "nbr" = "New Brunswick",
-                               "que" = "Quebec",
-                               "ont" = "Ontario",
-                               "man" = "Manitoba",
-                               "sas" = "Saskatchewan",
-                               "alb" = "Alberta",
-                               "bco" = "British Columbia")) |>
-  select(year, province, ed_high)
-
-# Change province from factor to character so it can be sorted into 
-# alphabetical order
-ed_high$province <- as.character(ed_high$province)
-ed_high <- ed_high[order(ed_high$province), ]
-summary(ed_high$ed_high)
-
-
-# Log real per capita income #################################################
-  # In 2024 constant dollars
-
-income <- get_cansim("11-10-0239-01") |>
-  mutate(GeoUID = as.numeric(GeoUID),
-         log_income = log10(VALUE)) |>
-  filter(REF_DATE >= 2000 & REF_DATE <= 2019,
-         `Age group` == "15 years and over",
-         Gender == "Total - Gender",
-         Statistics == "Average income (excluding zeros)",
-         `Income source` == "Total income",
-         GeoUID >= 10 & GeoUID <= 59)
-
-# Clean
-income <- income |>
-  rename(year = REF_DATE,
-         province = GEO) |>
-  mutate(province = fct_recode(province,
-                               "nfl" = "Newfoundland and Labrador",
-                               "pei" = "Prince Edward Island",
-                               "nsc" = "Nova Scotia",
-                               "nbr" = "New Brunswick",
-                               "que" = "Quebec",
-                               "ont" = "Ontario",
-                               "man" = "Manitoba",
-                               "sas" = "Saskatchewan",
-                               "alb" = "Alberta",
-                               "bco" = "British Columbia")) |>
-  select(year, province, log_income)
-
-income$province <- as.character(income$province)
-income <- income[order(income$province), ]
-summary(income$log_income)
 
 
 # Violent crime rate ##########################################################
@@ -257,123 +379,6 @@ crime <- crime[order(crime$province), ]
 
 summary(crime$crime)
 
-
-# Percentage foreign-born ######################################################
-# From Census years 2001, 2006, 2011, 2016, and 2021
-
-immigrant <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/immigrant percentage.xlsx", sheet = "immigrants")
-
-immigrant_long <- immigrant |>
-  pivot_longer(cols = starts_with("20"),
-               names_to = "year",
-               values_to = "immigrant")
-
-immigrant_long$year <- as.numeric(immigrant_long$year)
-# convert year from character to numeric for lm lines in geom_smooth()
-
-ggplot(immigrant_long, aes(x = year, y = immigrant, color = province)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-immigrant_long <- immigrant_long |>
-  mutate(province = recode(province, 
-                           "Newfoundland and Labrador" = "nfl",
-                           "Prince Edward Island" = "pei",
-                           "Nova Scotia" = "nsc",
-                           "New Brunswick" = "nbr",
-                           "Quebec" = "que",
-                           "Ontario" = "ont",
-                           "Manitoba" = "man",
-                           "Saskatchewan" = "sas",
-                           "Alberta" = "alb",
-                           "British Columbia" = "bco"))
-
-
-# Add rows with missing values for immigrant % for intercensal years
-new_rows_imm <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
-                                        "ont", "man", "sas", "alb", "bco"), each = 17),
-                       year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
-                       immigrant = rep(NA, times = 170))
-
-immigrant_long <- rbind(immigrant_long, new_rows_imm)
-immigrant_long <- immigrant_long[order(immigrant_long$province, immigrant_long$year), ]
-
-
-# Impute missing immkgration percentages in intercensal years by province
-install.packages("simputation")
-library(simputation)
-
-immigrant_long$yr0 <- immigrant_long$year - 2000
-
-immigrant_long_imp <- immigrant_long |>
-  group_by(province) |>
-  impute_lm(immigrant ~ yr0)
-
-# Convert year from numeric to character
-immigrant_long_imp$year <- as.character(immigrant_long_imp$year)
-
-immigrant_long_imp <- immigrant_long_imp |>
-  filter(year >= 2000 & year <= 2019) |>
-  select(year, province, immigrant)
-
-summary(immigrant_long_imp$immigrant)
-
-
-# Percentage indigenous ########################################################
-  # From Census years 2001, 2006, 2011, 2016, and 2021
-
-indig <- read_excel("C:/Users/jlariscy/lifespan var in Canada/predictor variables/predictors_cleaned/aboriginal percentage.xlsx", sheet = "indigenous")
-
-indig_long <- indig |>
-  pivot_longer(cols = starts_with("20"),
-               names_to = "year",
-               values_to = "indigenous")
-
-indig_long$year <- as.numeric(indig_long$year)
-# convert year from character to numeric for lm lines in geom_smooth()
-
-ggplot(indig_long, aes(x = year, y = indigenous, color = province)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-
-indig_long <- indig_long |>
-  mutate(province = recode(province, 
-                           "Newfoundland and Labrador" = "nfl",
-                           "Prince Edward Island" = "pei",
-                           "Nova Scotia" = "nsc",
-                           "New Brunswick" = "nbr",
-                           "Quebec" = "que",
-                           "Ontario" = "ont",
-                           "Manitoba" = "man",
-                           "Saskatchewan" = "sas",
-                           "Alberta" = "alb",
-                           "British Columbia" = "bco"))
-
-# Add rows with missing values for indigenous % for intercensal years
-new_rows_ind <- data.frame(province = rep(c("nfl", "pei", "nsc", "nbr", "que",
-                                            "ont", "man", "sas", "alb", "bco"), each = 17),
-                           year = rep(c(2000, 2002:2005, 2007:2010, 2012:2015, 2017:2020), times = 10),
-                           indigenous = rep(NA, times = 170))
-
-indig_long <- rbind(indig_long, new_rows_ind)
-indig_long <- indig_long[order(indig_long$province, indig_long$year), ]
-
-# Impute missing indigenous values in 2intercensal years by province
-
-indig_long$yr0 <- indig_long$year - 2000
-
-indig_long_imp <- indig_long |>
-  group_by(province) |>
-  impute_lm(indigenous ~ yr0)
-
-# Convert year from numeric to character
-indig_long_imp$year <- as.character(indig_long_imp$year)
-
-indig_long_imp <- indig_long_imp |>
-  filter(year >= 2000 & year <= 2019) |>
-  select(year, province, indigenous)
-
-summary(indig_long_imp$indigenous)
 
 
 # Number of physicians #########################################################
@@ -813,7 +818,7 @@ descr_stats <- predictors |>
 # Save table of descriptive statistics
 
 descr_stats |> 
-  gtsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/descr_stats.png")
+  gtsave("figures/descr_stats.png")
 
 
   # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 

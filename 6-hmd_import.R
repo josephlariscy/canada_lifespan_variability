@@ -637,12 +637,16 @@ HMD_edag <- HMD_edag |>
   # By creating the highlight_group indicator here, a legend will automatically
   # be created in the plot with countries listed in this order.
 
-# Manually change the order of in the legend
+# Manually change the order of countries in the legend
 HMD_edag <- HMD_edag |>
   mutate(highlight_group = fct_relevel(highlight_group,
-                                       "Canada", "Average",
-                               "Other HMD countries"))
+                                       "Canada", "United States", "Average",
+                                       "Other HMD countries"))
 
+# Manually change the order of lines in the plot
+HMD_edag <- HMD_edag |>
+  mutate(group = fct_relevel(group, "Other HMD countries", "Canada",
+                                        "United States", "Average"))
 
 # Figure
 install.packages("scales")
@@ -659,19 +663,35 @@ year.lbl <- c("1950\u20131954", "1955\u20131959", "1960\u20131964",
 ggplot(HMD_edag, aes(x = Year, y = edag, color = country)) +
   geom_line()
 
-ggplot(HMD_edag, aes(x = Year, y = edag, group = fct_rev(country), color = highlight_group)) +
-  geom_line(aes(linewidth = highlight_group)) +
+windows(width = 9, height = 7)
+ggplot(HMD_edag, aes(x = Year, y = edag, 
+                     group = fct_rev(country), 
+                     color = highlight_group, 
+                     linewidth = highlight_group,
+                     linetype = highlight_group,
+                     shape = highlight_group)) +
+  geom_line() +
+  geom_point(data = subset(HMD_edag, highlight_group == "Canada"), 
+             size = 2.5, fill = "red") +
   scale_color_manual(values = c("Other HMD countries" = "gray80",
                                 "Average" = "black",
                                 "United States" = "blue",
                                 "Canada" = "red")) +
   scale_linewidth_manual(values = c("Other HMD countries" = 0.6,
-                                    "Canada" = 1.1,
-                                    "Average" = 1.1,
-                                    "United States" = 1.1)) +
+                                    "Average" = 1.2,
+                                    "United States" = 1.2,
+                                    "Canada" = 1.2)) +
+  scale_linetype_manual(values = c("Other HMD countries" = 1,
+                                   "Average" = 2,
+                                   "United States" = 1,
+                                   "Canada" = 1)) +
+  scale_shape_manual(values = c("Other HMD countries" = 0,
+                                "Average" = 0,
+                                "United States" = 0,
+                                "Canada" = 22)) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
-theme_bw() +
+  theme_bw(base_size = 15) +
   theme(axis.text.x = element_text(color = "black", angle = 45, hjust = 1),
         axis.text.y = element_text(color = "black"),
         text = element_text(family = "serif"),
@@ -681,12 +701,16 @@ theme_bw() +
         legend.title = element_blank(),
         legend.position = "inside",
         legend.position.inside = c(0.7, 0.8),
-        legend.key.spacing.y = unit(-0.15, "cm")) +
+        legend.key.spacing.y = unit(-0.1, "cm"),
+        legend.key.width = unit(1.4, "cm")) +
   coord_cartesian(ylim = c(8, 18)) +
   scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
   scale_x_continuous(breaks = seq(1950, 2015, by = 5), labels = year.lbl)
 
 # group = fct_rev(country) changes the order of the lines  
+
+ggsave("figures/figure1 - HMD.png", device = png)
+
 
 
 # conserve code that worked but without legend
