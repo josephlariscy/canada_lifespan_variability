@@ -709,7 +709,7 @@ ggplot(HMD_edag, aes(x = Year, y = edag,
 
 # group = fct_rev(country) changes the order of the lines  
 
-ggsave("figures/figure1 - HMD.png", device = png)
+ggsave("tables and figures/figure1 - HMD.png", device = png)
 
 
 
