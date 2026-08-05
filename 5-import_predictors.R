@@ -355,7 +355,7 @@ descr_stats
 # Save table of descriptive statistics
 
 descr_stats |> 
-  gtsave("tables and figures/descr_stats.png")
+  gtsave("tables and figures/table1 - descr_stats.png")
 
 
   # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 
