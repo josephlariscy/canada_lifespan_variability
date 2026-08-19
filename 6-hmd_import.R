@@ -615,16 +615,16 @@ HMD_edag <- rbind(AUSedag, AUTedag, BELedag, BGRedag, CANedag, CZEedag,
 avg_edag <- HMD_edag |>
   group_by(Year) |>
   summarise(value = mean(edag)) |>
-  mutate(type = "HMD Average") |>
+  mutate(type = "HMD average") |>
   rename(edag = value, country = type) |>
   relocate(country, Year, edag)
 
 HMD_edag <- rbind(avg_edag, HMD_edag)
 HMD_edag$group <- NA
 HMD_edag$group[HMD_edag$country != "Average"  &
-               HMD_edag$country !=  "Canada" &
+               HMD_edag$country != "Canada" &
                HMD_edag$country != "United States"] = "Other HMD countries"
-HMD_edag$group[HMD_edag$country == "HMD Average"] = "HMD Average"
+HMD_edag$group[HMD_edag$country == "HMD average"] = "HMD average"
 HMD_edag$group[HMD_edag$country == "United States"] = "United States"
 HMD_edag$group[HMD_edag$country == "Canada"] = "Canada"
 
@@ -633,21 +633,24 @@ HMD_edag$group[HMD_edag$country == "Canada"] = "Canada"
 HMD_edag <- HMD_edag |>
   mutate(highlight_group = if_else(country %in% c("Canada", 
                                                   "United States", 
-                                                  "HMD Average"), 
+                                                  "HMD average"), 
                                    country, "Other HMD countries"))
   # By creating the highlight_group indicator here, a legend will automatically
   # be created in the plot with countries listed in this order.
 
+# Manually change the order of lines in the plot
+HMD_edag <- HMD_edag |>
+  mutate(country = fct_relevel(country, 
+                               "Canada", "United States", "HMD average",
+                               "Other HMD countries"))
+
+
 # Manually change the order of countries in the legend
 HMD_edag <- HMD_edag |>
   mutate(highlight_group = fct_relevel(highlight_group,
-                                       "Canada", "United States", "HMD Average",
+                                       "Canada", "United States", "HMD average",
                                        "Other HMD countries"))
 
-# Manually change the order of lines in the plot
-HMD_edag <- HMD_edag |>
-  mutate(group = fct_relevel(group, "Other HMD countries", "Canada",
-                                        "United States", "HMD Average"))
 
 # Figure
 
@@ -659,10 +662,10 @@ year.lbl <- c("1950\u20131954", "1955\u20131959", "1960\u20131964",
               "2010\u20132014", "2015\u20132019")
 # \u2013 makes an endash
 
-ggplot(HMD_edag, aes(x = Year, y = edag, color = country)) +
-  geom_line()
+#ggplot(HMD_edag, aes(x = Year, y = edag, color = country)) +
+#  geom_line()
 
-windows(width = 9, height = 7)
+windows(width = 9, height = 8)
 ggplot(HMD_edag, aes(x = Year, y = edag, 
                      group = fct_rev(country), 
                      color = highlight_group, 
@@ -673,24 +676,25 @@ ggplot(HMD_edag, aes(x = Year, y = edag,
   geom_point(data = subset(HMD_edag, highlight_group == "Canada"), 
              size = 2.5, fill = "red") +
   scale_color_manual(values = c("Other HMD countries" = "gray80",
-                                "HMD Average" = "black",
+                                "HMD average" = "black",
                                 "United States" = "blue",
                                 "Canada" = "red")) +
   scale_linewidth_manual(values = c("Other HMD countries" = 0.6,
-                                    "HMD Average" = 1.2,
+                                    "HMD average" = 1.2,
                                     "United States" = 1.2,
                                     "Canada" = 1.2)) +
   scale_linetype_manual(values = c("Other HMD countries" = 1,
-                                   "HMD Average" = 2,
+                                   "HMD average" = 2,
                                    "United States" = 1,
                                    "Canada" = 1)) +
   scale_shape_manual(values = c("Other HMD countries" = 0,
-                                "HMD Average" = 0,
+                                "HMD average" = 0,
                                 "United States" = 0,
                                 "Canada" = 22)) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
-  theme_bw(base_size = 15) +
+  ggtitle(expression(bold("Figure 1:\n")~"Lifespan disparity in Canada compared with the United States\nand other HMD countries, 1950\u20131954 and 2015\u20132019")) +
+  theme_bw(base_size = 16) +
   theme(axis.text.x = element_text(color = "black", angle = 45, hjust = 1),
         axis.text.y = element_text(color = "black"),
         text = element_text(family = "serif"),
@@ -701,7 +705,8 @@ ggplot(HMD_edag, aes(x = Year, y = edag,
         legend.position = "inside",
         legend.position.inside = c(0.7, 0.8),
         legend.key.spacing.y = unit(-0.1, "cm"),
-        legend.key.width = unit(1.4, "cm")) +
+        legend.key.width = unit(1.4, "cm"),
+        plot.margin = margin(t = 25, r = 10, b = 10, l = 10)) +
   coord_cartesian(ylim = c(8, 18)) +
   scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
   scale_x_continuous(breaks = seq(1950, 2015, by = 5), labels = year.lbl)
