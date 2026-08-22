@@ -16,8 +16,9 @@ library(tidyverse)
 
 
 # Gini coefficient ############################################################
-# Three different measures: adjusted market income, adjusted total income, and
-# adjusted after-tax income. I picked "Adjusted total income."
+  # Three different measures: adjusted market income, adjusted total income, and
+  # adjusted after-tax income. I picked "Adjusted total income."
+  # Data from 1976 to 2024.
 gini <- get_cansim("11-10-0134-01") |>
   mutate(GeoUID = as.numeric(GeoUID)) |>
   filter(REF_DATE >= 2000 & REF_DATE <= 2019,
@@ -334,7 +335,7 @@ descr_stats <- predictors |>
                 stat_5 = "Max.") |>
   #modify_footer("Note: N = 200") |>
   as_gt() |>
-    tab_header(title = md("**Table 1.** Descriptive statistics for regression variables")) |>  
+    tab_header(title = md("**Table 2.** Descriptive statistics for regression variables")) |>  
     tab_source_note(source_note = md("Note: *N* = 200.")) |>
     opt_align_table_header(align = "left") |>
     tab_options(heading.title.font.size = px(16),
@@ -355,7 +356,7 @@ descr_stats
 # Save table of descriptive statistics
 
 descr_stats |> 
-  gtsave("tables and figures/table1 - descr_stats.png")
+  gtsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/table2 - descr_stats.png")
 
 
   # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 

@@ -23,7 +23,7 @@ library(reshape2)
 library(scales)
 
 
-# Figure 1: dx curves in 1950-1954 and 2015-2019 ----
+# Figure 2: dx curves in 1950-1954 and 2015-2019 ----
 
 # Plot dx function with plot()
 #windows(width = 9, height = 6)
@@ -48,7 +48,7 @@ ggplot(data = can1950_2015,
                      labels = c("1950\u20131954", "2015\u20132019")) +
   scale_linetype_manual(values = c("solid", "dashed"),
                         labels = c("1950\u20131954", "2015\u20132019")) +
-  ggtitle(expression(bold("Figure 1:")~"Age-at-death distributions for Canada overall in 1950\u20131954 and 2015\u20132019")) +
+  ggtitle(expression(bold("Figure 2:")~"Age-at-death distributions for Canada overall in 1950\u20131954 and 2015\u20132019")) +
   ylab(expression(bold("Life table deaths (")~bold(""["1"])~bolditalic("d")~bold(""["x"])~bold(")"))) +
   xlab(expression(bold("Age"))) +
   coord_cartesian(ylim = c(0, 4500)) +
@@ -66,11 +66,11 @@ ggplot(data = can1950_2015,
 
 #loadfonts(device = "postscript")
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure1_dx.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure2_dx.png", 
        device = png)
 
 
-# Figure 2 - plot of e-dagger 0 over time for Canada overall ----
+# Figure 3 - plot of e-dagger 0 over time for Canada overall ----
 
 df_fig1_b <- b_can[b_can$Age==0, c("prov", "sex", "Year", "Age", "edag")]
 df_fig1_f <- f_can[f_can$Age==0, c("prov", "sex", "Year", "Age", "edag")]
@@ -108,7 +108,7 @@ ggplot(data = df_fig1,
                         labels = c("Overall", "Women", "Men")) +
   scale_y_continuous(limits = c(9, 16), n.breaks = 7) +
   scale_x_continuous(breaks = seq(1950, 2019, by = 5), labels = year.lbl) +
-  ggtitle(expression(bold("Figure 2:")~"Trends in lifespan variability in Canada, overall and by sex")) +
+  ggtitle(expression(bold("Figure 3:")~"Trends in lifespan variability in Canada, overall and by sex")) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
   theme_bw() +
@@ -124,7 +124,7 @@ ggplot(data = df_fig1,
         legend.key.width = unit(1.5,"cm"),
         legend.text = element_text(size = 12))
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure2_e-dagger.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure3_e-dagger.png", 
        device = png)
 
 
@@ -215,11 +215,11 @@ ggplot(NULL, aes(x = Year, y = edag)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-#ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet.png", 
+#ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure3_facet.png", 
 #       device = png)
 
 
-# Figure 3: Facet plot for the 10 provinces, without Northwest Territories and Yukon, both sexes ----
+# Figure 4: Facet plot for the 10 provinces, without Northwest Territories and Yukon, both sexes ----
 
 df_fig3_provs_no_terrs <- df_fig3_provs[df_fig3_provs$prov != "Northwest Territories" & df_fig3_provs$prov != "Yukon", ]
 df_fig3_other_provs_no_terrs <- df_fig3_provs_no_terrs[,-1]  # remove prov variable
@@ -232,7 +232,7 @@ ggplot(NULL, aes(x = Year, y = edag)) +
   geom_point(data = df_fig3_b, shape = 5, size = 2, fill = "grey", col = "black") +
   geom_point(data = df_fig3_provs_no_terrs, size = 3.5) +
   facet_wrap(~ prov, ncol = 4) +
-  ggtitle(expression(bold("Figure 3:")~"Trends in lifespan variability among Canadian provinces, excluding Yukon and the Northwest Territories")) +
+  ggtitle(expression(bold("Figure 4:")~"Trends in lifespan variability among Canadian provinces, excluding Yukon and the Northwest Territories")) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
   scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
@@ -246,11 +246,11 @@ ggplot(NULL, aes(x = Year, y = edag)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure3_facet_no_territories.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure4_facet_no_territories.png", 
        device = png)
 
 
-# Figure 4: Facet plot for ONLY Northwest Territories and Yukon, both sexes ----
+# Figure 5: Facet plot for ONLY Northwest Territories and Yukon, both sexes ----
 
 df_fig3_terrs <- df_fig3_provs[df_fig3_provs$prov == "Northwest Territories" | df_fig3_provs$prov == "Yukon", ]
 
@@ -262,7 +262,7 @@ ggplot(NULL, aes(x = Year, y = edag)) +
   geom_point(data = df_fig3_b, shape = 5, size = 2, fill = "grey", col = "black") +
   geom_point(data = df_fig3_terrs, size = 3.5) +
   facet_wrap(~ prov, ncol = 2) +
-  ggtitle(expression(bold("Figure 4:")~"Trends in lifespan variability in Yukon and the Northwest Territories")) +
+  ggtitle(expression(bold("Figure 5:")~"Trends in lifespan variability in Yukon and the Northwest Territories")) +
   ylab(expression(bold("Lifespan Disparity (")~bolditalic("e")~bold(""["0"]^"\u2020")~bold(")"))) +
   xlab(expression(bold("Year"))) +
   scale_y_continuous(labels = label_number(accuracy = 0.1), n.breaks = 6) +
@@ -276,7 +276,7 @@ ggplot(NULL, aes(x = Year, y = edag)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure4_facet_only_territories.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure5_facet_only_territories.png", 
        device = png)
 
 
@@ -304,7 +304,7 @@ rownames(table1_edagger0) <- c("Canada", "Alberta", "British Columbia",
 
 table1_edagger0 <- round(table1_edagger0, 1)  # round e-dagger to 1 decimal place
 write.csv(table1_edagger0, 
-          "C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/table1_edagger0.csv")
+          "C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/table1_edagger0.csv")
 
 
 # Figure 5: Changes in life expectancy and e-dagger ----
@@ -413,7 +413,7 @@ ggplot(data = df_fig5_scatter_long, aes(x = ld.change, y = ex.change)) +
 # scales = "free" - adds y-axis to all three facets, not just the first one
 # panel.spacing = unit(2, "lines") - adds space between facets
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure5_scatter.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure5_scatter.png", 
        device = png)
 
 
@@ -469,5 +469,5 @@ ggplot(data = comp_fig, aes(x = ex, y = edag)) +
   annotate("segment", x = 79.8, xend = 80,    y = 12.3, yend = 11.5) +
   annotate("segment", x = 81,   xend = 80.15, y = 11.9, yend = 11.57)
 
-ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/figures/figure6_comparison.png", 
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure6_comparison.png", 
        device = png)
