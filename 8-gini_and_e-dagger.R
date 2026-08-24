@@ -22,6 +22,8 @@ e_dagger_5$province[e_dagger_5$province == "que"] = "Quebec"
 e_dagger_5$province[e_dagger_5$province == "sas"] = "Saskatchewan"
 
 
+# Replicating the Gini and lifespan variability from Edwards and Tuljapurkar
+
 ggplot(data = e_dagger_5, aes(x = gini, y = edag, 
                               color = province, shape = province)) +
   geom_path() +
@@ -60,3 +62,4 @@ ggplot(data = e_dagger_5, aes(x = gini, y = edag,
 # Manitoba and Saskatchewan (two of the prairie provinces) are unique.
 # They had higher e-daggers than the other provinces, and they did not
 # exhibit an association between Gini index and e-dagger.
+  
