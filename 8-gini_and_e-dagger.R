@@ -1,8 +1,3 @@
-#e_dagger_5 <- predictors |>
-#  filter(year==2000 | year==2005 | year==2010 | year==2015 | year==2019)
-
-#e_dagger_5 <- predictors |>
-#  filter(year==2000 | year==2019)
 
 e_dagger_5 <- predictors |>
   filter(year==2000 | year==2010 | year==2019)
@@ -24,8 +19,9 @@ e_dagger_5$province[e_dagger_5$province == "sas"] = "Saskatchewan"
 
 # Replicating the Gini and lifespan variability from Edwards and Tuljapurkar
 
-ggplot(data = e_dagger_5, aes(x = gini, y = edag, 
-                              color = province, shape = province)) +
+windows(width = 8, height = 6)
+ggplot(data = e_dagger_5, aes(x = gini, y = edag, color = province, 
+                              shape = province)) +
   geom_path() +
   geom_point() +
   geom_text_repel(aes(label = year, family = "serif")) +
@@ -51,13 +47,19 @@ ggplot(data = e_dagger_5, aes(x = gini, y = edag,
         panel.grid.minor = element_blank(),
         legend.title = element_blank()) +
   coord_cartesian(ylim = c(9.5, 12), xlim = c(.28,.38)) +
-  scale_x_continuous(breaks = seq(.28, .38, by = 0.02))
+  scale_x_continuous(breaks = seq(.28, .38, by = 0.02)) +
   scale_y_continuous(breaks = seq(9.5, 12, by = 0.5))
+
+ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/gini and e-dagger.png", 
+       device = png)
 
 # guides(color = guide_legend(override.aes = list(label = "")))
 # changes the legend so that the shape is shown next to each province
 # rather than the letter a, which comes from geom_text.
 
+  
+# Most provinces exhibited decreased Gini and decreased e-dagger from 2000 to
+# 2019.
   
 # Manitoba and Saskatchewan (two of the prairie provinces) are unique.
 # They had higher e-daggers than the other provinces, and they did not
