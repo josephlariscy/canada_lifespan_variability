@@ -335,7 +335,7 @@ descr_stats <- predictors |>
                 stat_5 = "Max.") |>
   #modify_footer("Note: N = 200") |>
   as_gt() |>
-    tab_header(title = md("**Table 2.** Descriptive statistics for regression variables")) |>  
+    tab_header(title = md("**Table 1.** Descriptive statistics for regression variables")) |>  
     tab_source_note(source_note = md("Note: *N* = 200.")) |>
     opt_align_table_header(align = "left") |>
     tab_options(heading.title.font.size = px(16),
@@ -356,7 +356,7 @@ descr_stats
 # Save table of descriptive statistics
 
 descr_stats |> 
-  gtsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/table2 - descr_stats.png")
+  gtsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/table1 - descr_stats.png")
 
 
   # gt::fmt_markdown(columns = c(label)) ... This allows both superscript and 
@@ -379,3 +379,7 @@ descr_stats |>
 # Correlation matrix
 predictors_cor <- predictors |> select(-c(province, year))
 cor(predictors_cor)
+
+
+# The regression results presented in Table 2 were run in Stata by Ben Walker.
+

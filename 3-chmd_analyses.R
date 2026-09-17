@@ -11,6 +11,7 @@ install.packages("extrafont")
 install.packages("ggplot2")
 install.packages("grid")
 install.packages("gridExtra")
+install.packages("plotly")
 install.packages("reshape2")
 install.packages("scales")
 library(data.table)  # transpose() function
@@ -19,6 +20,7 @@ library(extrafont)
 library(grid)
 library(ggplot2)
 library(gridExtra)
+library(plotly)
 library(reshape2)
 library(scales)
 
@@ -439,6 +441,14 @@ range(comp_fig$edag)
 
 windows(width = 6, height = 6)
 ggplot(data = comp_fig, aes(x = ex, y = edag)) +
+  annotate("text", x = 74.9, y = 12.06, family = "serif", label = "Northwest\nTerritories") +
+  annotate("text", x = 78.2, y = 11,    family = "serif", label = "Yukon") +
+  annotate("text", x = 79.9, y = 12.4,  family = "serif", label = "Manitoba") +
+  annotate("text", x = 81.5, y = 12,    family = "serif", label = "Saskatchewan") +
+  annotate("segment", x = 74.9, xend = 74.52, y = 12.3, yend = 12.74) +
+  annotate("segment", x = 78.2, xend = 78.90,  y = 11.1, yend = 11.66) +
+  annotate("segment", x = 79.8, xend = 79.98,    y = 12.3, yend = 11.48) +
+  annotate("segment", x = 81,   xend = 80.16, y = 11.9, yend = 11.60) +
   geom_point(aes(fill = factor(nation)), color = "black", size = 4, shape = 21) +
   scale_fill_manual(values = c("black", "grey"), 
                      labels = c("Canadian provinces and territories", "U.S. states")) +
@@ -459,15 +469,10 @@ ggplot(data = comp_fig, aes(x = ex, y = edag)) +
         legend.background = element_blank(),
         legend.box.background = element_rect(color = "black"),
         legend.text = element_text(size = 12),
-        plot.margin = margin(t = 30, r = 10, b = 10, l = 10)) +
-  annotate("text", x = 74.9, y = 12,   family = "serif", label = "Northwest\nTerritories") +
-  annotate("text", x = 78.2, y = 11,   family = "serif", label = "Yukon") +
-  annotate("text", x = 79.9, y = 12.4, family = "serif", label = "Manitoba") +
-  annotate("text", x = 81.5, y = 12,   family = "serif", label = "Saskatchewan") +
-  annotate("segment", x = 74.9, xend = 74.43, y = 12.3, yend = 12.8) +
-  annotate("segment", x = 78.2, xend = 78.9,  y = 11.1, yend = 11.7) +
-  annotate("segment", x = 79.8, xend = 80,    y = 12.3, yend = 11.5) +
-  annotate("segment", x = 81,   xend = 80.15, y = 11.9, yend = 11.57)
+        plot.margin = margin(t = 30, r = 10, b = 10, l = 10))
 
 ggsave("C:/Users/jlariscy/lifespan var in Canada/canada_lifespan_variability/tables and figures/figure6_comparison.png", 
        device = png)
+
+# Save data for use in interactive presentation
+saveRDS(comp_fig, file = "C:/Users/jlariscy/lifespan var in Canada/presentations/soc flash talk/comp_fig.rds")
