@@ -4,4 +4,4 @@ This project calculates lifespan inequality for each Canadian province/territory
 
 Data are drawn from the [Canadian Human Mortality Database](http://www.bdlc.umontreal.ca/chmd/).
 
-This paper was accepted for presentation at the 2027 PAA meeting.
+This paper was accepted for presentation at the 2027 Population Association of America (PAA) meeting in the session "Variation in Old Age Mortality."
